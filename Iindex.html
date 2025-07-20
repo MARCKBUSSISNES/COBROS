@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Limb System Demo</title>
+  <style>
+    canvas {
+      background: #222;
+      display: block;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="600" height="400"></canvas>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  let mouse = { x: 300, y: 200 };
+
+  document.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+  });
+
+  class Node {
+    constructor(x, y, isSegment = true, parent = null) {
+      this.position = { x, y };
+      this.isSegment = isSegment;
+      this.parent = parent;
+    }
+  }
+
+  class LimbSystem {
+    constructor(endNode, maxLength, speed) {
+      this.speed = speed;
+      this.nodes = [];
+      this.length = 0;
+
+      let node = endNode;
+
+      for (let i = 0; i < maxLength; i++) {
+        if (!node) break;
+        this.nodes.unshift(node);
+        if (node.isSegment) {
+          this.length = i + 1;
+          break;
+        }
+        node = node.parent;
+      }
+
+      this.hip = this.nodes.length > 0 ? this.nodes[0].parent : null;
+    }
+
+    update(mouseX, mouseY) {
+      this.moveTo(mouseX, mouseY);
+    }
+
+    moveTo(x, y) {
+      if (this.nodes.length === 0) return;
+
+      let endNode = this.nodes[this.nodes.length - 1];
+      endNode.position.x += (x - endNode.position.x) * this.speed;
+      endNode.position.y += (y - endNode.position.y) * this.speed;
+    }
+
+    draw(ctx) {
+      ctx.strokeStyle = '#0f0';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < this.nodes.length; i++) {
+        let n = this.nodes[i];
+        if (i === 0) {
+          ctx.moveTo(n.position.x, n.position.y);
+        } else {
+          ctx.lineTo(n.position.x, n.position.y);
+        }
+      }
+      ctx.stroke();
+
+      // Dibuja los nodos
+      for (let n of this.nodes) {
+        ctx.beginPath();
+        ctx.arc(n.position.x, n.position.y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+      }
+    }
+  }
+
+  // Crear nodos con padres encadenados
+  const base = new Node(300, 300, false);
+  const mid = new Node(310, 280, false, base);
+  const tip = new Node(320, 260, true, mid);
+
+  const limb = new LimbSystem(tip, 10, 0.1);
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    limb.update(mouse.x, mouse.y);
+    limb.draw(ctx);
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+</script>
+</body>
+</html>
