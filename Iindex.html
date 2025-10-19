@@ -1,209 +1,331 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Parqueo – Tickets 80mm</title>
-<style>
-  :root{
-    --bg:#0b0d11; --ink:#111; --fg:#f6f6f6; --accent:#e5162f; --accent2:#f3b000;
-    --panel:#141820; --line:#dd2b2b;
-    --screen-font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--screen-font)}
-  /* ======= PANTALLA (panel) ======= */
-  .header{
-    padding:18px 28px; display:flex; align-items:center; gap:24px;
-    background:
-      repeating-linear-gradient(90deg,#fff 0 36px, #fff 0 72px),
-      linear-gradient(0deg,transparent 0,transparent 36px,#fff 36px,#fff 72px,transparent 72px);
-    background-size:120px 72px,100% 72px;
-    background-position:center top, left top;
-    border-bottom:4px solid #2b2f3a;
-  }
-  .title{
-    margin-left:auto; margin-right:auto; text-align:center;
-    text-shadow:0 2px 0 #000, 0 0 24px rgba(0,0,0,.4);
-    font-weight:900; letter-spacing:.06em; font-size:54px; color:#fff;
-  }
-  .wrap{display:grid; grid-template-columns:280px 1fr; gap:24px; padding:24px; max-width:1400px; margin:0 auto}
-  .rail{background:var(--panel); border:1px solid #1e2330; border-radius:16px; padding:16px}
-  .rail h3{margin:0 0 12px; font-size:14px; color:#aab2c2; letter-spacing:.12em}
-  .btn{
-    width:100%; padding:14px 16px; margin:10px 0; border-radius:12px; border:2px solid #2a2f3c;
-    background:#1b2130; color:#e9eef8; font-weight:700; letter-spacing:.02em; cursor:pointer;
-    transition:.15s transform ease,.15s box-shadow ease; text-align:left;
-  }
-  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.25)}
-  .btn.blue{border-color:#3174ff22; background:#19253c}
-  .btn.green{border-color:#2dd36f33; background:#172a1f}
-  .btn.gold{border-color:#ffcc0022; background:#2a2417}
-  .canvas{
-    background:
-      radial-gradient(1200px 500px at 120% 120%, rgba(255,0,0,.08), transparent 60%),
-      radial-gradient(900px 400px at -10% 100%, rgba(255,0,0,.10), transparent 60%),
-      var(--panel);
-    border:1px solid #1e2330; border-radius:16px; padding:28px; min-height:560px;
-  }
-  .cards{display:grid; grid-template-columns:1fr 1fr; gap:24px}
-  .card{
-    border:3px solid var(--line); border-radius:18px; padding:24px; background:
-      linear-gradient(135deg, rgba(255,255,255,.02), rgba(255,255,255,0) 40%),
-      linear-gradient(315deg, rgba(229,22,47,.12), transparent 60%);
-    display:grid; grid-template-rows:1fr auto; align-items:center; cursor:pointer;
-    transition:.15s transform ease, .15s box-shadow ease;
-  }
-  .card:hover{transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,0,0,.25)}
-  .card h2{margin:8px 0 0; font-size:56px; letter-spacing:.08em; text-align:center}
-  .card svg{display:block; margin:0 auto; height:180px}
-  .badge{width:56px;height:56px;border-radius:50%; background:var(--accent2); display:grid; place-items:center;
-         color:#000; font-weight:900; position:absolute; transform:translate(16px,-16px)}
-  .card-wrap{position:relative}
-  .footer{padding:8px 24px; text-align:center; color:#96a0b5; font-size:12px}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Cobro - MarckBusiness</title>
+  <style>
+    /* Básicos */
+    :root{ --green:#075E54; --light:#25D366; --card:#fff; --bg:#f4f7fb; }
+    body{font-family:Roboto,Arial,sans-serif;background:var(--bg);margin:0;padding:28px;}
+    .wrap{max-width:1100px;margin:auto;display:grid;grid-template-columns:380px 1fr 340px;gap:20px;align-items:start}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.08)}
+    h2{margin:0 0 10px 0;color:var(--green)}
+    label{font-size:0.9rem;color:#333}
+    input[type=text], input[type=number], textarea, select{width:100%;padding:10px;margin-top:6px;margin-bottom:12px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box}
+    button{background:var(--light);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    .muted{color:#666;font-size:0.9rem}
+    .small{font-size:0.85rem}
+    ul.list{list-style:none;padding:0;margin:0;max-height:360px;overflow:auto}
+    ul.list li{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid #f0f0f0}
+    .product-actions button{margin-left:6px;padding:6px 10px;border-radius:8px}
+    table{width:100%;border-collapse:collapse}
+    table th, table td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .right{text-align:right}
+    .controls{display:flex;gap:8px}
+    .danger{background:#e74c3c}
+    .ghost{background:#e0e0e0;color:#333}
+    .center{text-align:center}
+    .small-note{font-size:0.85rem;color:#555}
 
-  /* ======= TICKET 80mm ======= */
-  /* El contenedor del ticket existe siempre, pero se oculta en pantalla */
-  #ticket{display:none}
-  #ticket .paper{width:80mm; background:#fff; color:#000; padding:0; margin:0}
-  #ticket .pad{padding:8mm 6mm}
-  #ticket .logo{display:block; margin:8mm auto 2mm; width:46mm}
-  #ticket h1{font: bold 18pt/1.1 "Arial", sans-serif; text-align:center; margin:3mm 0 0}
-  #ticket h1 .small{display:block; font-size:14pt; margin-top:1mm}
-  #ticket .veh{font:bold 12pt/1.1 Arial, sans-serif; text-align:center; margin:3mm 0 0}
-  #ticket .label{font:bold 10pt Arial; margin:6mm 0 1mm}
-  #ticket .date{font:10pt Arial}
-  #ticket .time{font:bold 28pt Arial; text-align:center; margin:4mm 0 4mm}
-  #ticket .code-label{font:bold 12pt Arial; text-align:center; border-top:1px solid #000; padding-top:3mm; margin-top:4mm}
-  #ticket .code{font:bold 22pt Arial; text-align:center; letter-spacing:2pt; margin:1mm 0 2mm}
-  #ticket .note{font:8pt Arial; text-align:center; margin:6mm 0 4mm}
-  #ticket .imgTop{display:block; margin:6mm auto 0; width:40mm}
+    /* Ticket (preview/print) */
+    @media print{
+      body *{visibility:visible}
+    }
 
-  /* Ocultar todo menos el ticket al imprimir */
-  @media print{
-    body{background:#fff}
-    .header,.wrap,.footer{display:none !important}
-    #ticket{display:block}
-    @page{size:80mm auto; margin:0}
-  }
-</style>
+    /* Responsive */
+    @media (max-width:1000px){.wrap{grid-template-columns:1fr;}}
+  </style>
 </head>
 <body>
-
-  <!-- CABECERA -->
-  <div class="header">
-    <div style="width:120px;height:60px;display:grid;place-items:center;background:#0008;border:2px solid #fff;border-radius:12px">
-      <!-- F1 mini decorativo -->
-      <svg viewBox="0 0 128 64" width="96" aria-hidden="true">
-        <path d="M6 38h30l8-9h22l10 9h32v7H6z" fill="#e5162f"/>
-      </svg>
-    </div>
-    <div class="title">PARQUEO</div>
-  </div>
-
-  <!-- CONTENIDO -->
   <div class="wrap">
-    <aside class="rail">
-      <h3>MENÚ</h3>
-      <button class="btn blue" onclick="goTicket('CARRO')">Ticket Carro</button>
-      <button class="btn blue" onclick="goTicket('MOTO')">Ticket Moto</button>
-      <button class="btn green" onclick="window.print()">Imprimir (último)</button>
-      <button class="btn gold" onclick="location.reload()">Limpiar / Reiniciar</button>
-    </aside>
+    <!-- Crear producto -->
+    <div class="card">
+      <h2>Crear / Administrar Productos</h2>
+      <div class="small-note">Los productos se guardan localmente en su navegador (localStorage). Si desea guardarlos en GitHub/repo, puedo explicar la opción con backend).</div>
 
-    <main class="canvas">
-      <div class="cards">
-        <div class="card card-wrap" onclick="goTicket('MOTO')" title="Generar ticket para moto">
-          <div class="badge">⭣</div>
-          <!-- SVG moto -->
-          <svg viewBox="0 0 512 256" role="img" aria-label="Moto">
-            <path fill="#f04" d="M70 170a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Zm360-30a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Z"/>
-            <path fill="#fff" d="M152 116h66l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H224l-88-32z"/>
-          </svg>
-          <h2>MOTO</h2>
-        </div>
+      <label>Nombre del producto</label>
+      <input id="p_name" type="text" placeholder="Ej: Polo blanco" />
 
-        <div class="card card-wrap" onclick="goTicket('CARRO')" title="Generar ticket para carro">
-          <div class="badge">⭣</div>
-          <!-- SVG carro -->
-          <svg viewBox="0 0 512 256" role="img" aria-label="Carro">
-            <path fill="#f04" d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z"/>
-            <circle cx="140" cy="212" r="44" fill="#fff"/><circle cx="140" cy="212" r="22" fill="#f04"/>
-            <circle cx="388" cy="212" r="44" fill="#fff"/><circle cx="388" cy="212" r="22" fill="#f04"/>
-          </svg>
-          <h2>CARRO</h2>
-        </div>
+      <label>Precio (Q)</label>
+      <input id="p_price" type="number" min="0" step="0.01" placeholder="0.00" />
+
+      <label>Stock (opcional)</label>
+      <input id="p_stock" type="number" min="0" step="1" placeholder="Cantidad en inventario" />
+
+      <div style="display:flex;gap:8px">
+        <button id="addProductBtn">Agregar producto</button>
+        <button id="clearProductsBtn" class="danger">Borrar todo</button>
       </div>
-    </main>
-  </div>
 
-  <div class="footer">© 2025 Marck Business. Todos los derechos reservados.</div>
-
-  <!-- ====== TICKET (SOLO SE VE EN IMPRESIÓN) ====== -->
-  <section id="ticket" aria-hidden="true">
-    <div class="paper">
-      <!-- imagen vehículo arriba (se inyecta SVG) -->
-      <div class="pad">
-        <div id="veh-icon"></div>
-        <h1>TICKET DE<span class="small">PARQUEO</span></h1>
-        <div class="veh" id="veh-name">CARRO</div>
-
-        <div class="label">HORA DE ENTRADA</div>
-        <div class="date" id="fechaLarga">viernes, 29 de agosto de 2025</div>
-        <div class="time" id="horaGrande">10:18:59 p. m.</div>
-
-        <div class="code-label">CODIGO</div>
-        <div class="code" id="codigo">8533</div>
-
-        <div class="note">*RECUERDE NO PERDER ESTE TICKET*</div>
-      </div>
+      <hr />
+      <h3 class="small">Productos disponibles</h3>
+      <ul id="productsList" class="list"></ul>
     </div>
-  </section>
+
+    <!-- Panel de venta -->
+    <div class="card">
+      <h2>Panel de venta</h2>
+      <div class="small-note">Haga clic en "Agregar" en un producto para añadirlo a la venta. Ajuste cantidad desde el panel de venta.</div>
+
+      <table id="cartTable">
+        <thead><tr><th>Cant</th><th>Producto</th><th class="right">Precio</th><th class="right">Total</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div>
+          <label>Cliente (opcional)</label>
+          <input id="clientName" placeholder="Nombre del cliente" />
+        </div>
+        <div style="text-align:right">
+          <div class="muted">Total</div>
+          <div id="cartTotal" style="font-size:1.4rem;font-weight:700">Q0.00</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button id="payBtn">Cobrar y Generar ticket</button>
+        <button id="clearCartBtn" class="ghost">Limpiar venta</button>
+      </div>
+
+      <div class="small-note" style="margin-top:10px">Ticket 80mm imprimible. Se genera un número de ticket consecutivo.</div>
+    </div>
+
+    <!-- Ventas del día -->
+    <div class="card">
+      <h2>Registro de ventas (hoy)</h2>
+      <div id="salesListWrap">
+        <ul id="salesList" class="list"></ul>
+      </div>
+
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="muted">Ventas hoy</div>
+          <div id="salesCount">0</div>
+        </div>
+        <div style="text-align:right">
+          <div class="muted">Total del día</div>
+          <div id="salesTotal">Q0.00</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="printDayTotal">Imprimir total 80mm</button>
+        <button id="deleteSales" class="danger">Borrar ventas (hoy)</button>
+      </div>
+
+      <div class="small-note" style="margin-top:10px">Nota: borrar ventas eliminará solo las ventas registradas en el almacenamiento local.</div>
+    </div>
+  </div>
 
 <script>
-  // ========= Utilidades =========
-  const carSVG =
-  `<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-     <path fill="#333" d="M28 154h28l22-38c8-14 20-26 50-34l136-36c22-6 54 4 72 24l32 36h40c12 0 24 8 24 24v56H28z"/>
-     <circle cx="140" cy="212" r="44" fill="#666"/><circle cx="140" cy="212" r="22" fill="#333"/>
-     <circle cx="388" cy="212" r="44" fill="#666"/><circle cx="388" cy="212" r="22" fill="#333"/>
-   </svg>`;
+// Keys localStorage
+const KEY_PRODUCTS = 'mb_products_v1';
+const KEY_SALES = 'mb_sales_v1';
+const KEY_TICKET = 'mb_ticket_counter_v1';
 
-  const motoSVG =
-  `<svg class="imgTop" viewBox="0 0 512 256" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-     <path fill="#333" d="M70 170a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Zm360-30a54 54 0 1 0 0 108a54 54 0 0 0 0-108Zm0 30a24 24 0 1 1 0 48a24 24 0 0 1 0-48Z"/>
-     <path fill="#333" d="M152 116h66l40-48h80l24 48h68v24h-88l-24-48h-54l-34 40l40 16h96v24H224l-88-32z"/>
-   </svg>`;
+// Estado en memoria
+let products = JSON.parse(localStorage.getItem(KEY_PRODUCTS) || '[]');
+let sales = JSON.parse(localStorage.getItem(KEY_SALES) || '[]');
+let ticketCounter = parseInt(localStorage.getItem(KEY_TICKET) || '1', 10);
+let cart = [];
 
-  function pad(n){return String(n).padStart(2,"0")}
-  function codigo4(){ return Math.floor(1000 + Math.random()*9000) }
+// Elementos DOM
+const productsList = document.getElementById('productsList');
+const addProductBtn = document.getElementById('addProductBtn');
+const clearProductsBtn = document.getElementById('clearProductsBtn');
+const p_name = document.getElementById('p_name');
+const p_price = document.getElementById('p_price');
+const p_stock = document.getElementById('p_stock');
 
-  function fechaLargaES(d){
-    const f = new Intl.DateTimeFormat('es-GT', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-    return f.format(d);
-  }
-  function horaES(d){
-    const f = new Intl.DateTimeFormat('es-GT', {hour:'numeric', minute:'2-digit', second:'2-digit', hour12:true});
-    // Forzar formato "p. m." / "a. m." de forma similar a tu ejemplo
-    return f.format(d).replace(" a. m."," a. m.").replace(" p. m."," p. m.");
-  }
+const cartTableBody = document.querySelector('#cartTable tbody');
+const cartTotalEl = document.getElementById('cartTotal');
+const payBtn = document.getElementById('payBtn');
+const clearCartBtn = document.getElementById('clearCartBtn');
+const clientNameEl = document.getElementById('clientName');
 
-  // ========= Generar ticket + imprimir =========
-  function goTicket(tipo){
-    // 1) set tipo
-    document.getElementById('veh-name').textContent = (tipo === 'MOTO') ? 'MOTO' : 'CARRO';
-    document.getElementById('veh-icon').innerHTML = (tipo === 'MOTO') ? motoSVG : carSVG;
+const salesList = document.getElementById('salesList');
+const salesCount = document.getElementById('salesCount');
+const salesTotal = document.getElementById('salesTotal');
+const printDayTotal = document.getElementById('printDayTotal');
+const deleteSalesBtn = document.getElementById('deleteSales');
 
-    // 2) fecha/hora/código
-    const now = new Date();
-    document.getElementById('fechaLarga').textContent = fechaLargaES(now);
-    document.getElementById('horaGrande').textContent  = horaES(now);
-    document.getElementById('codigo').textContent = codigo4();
+// Helpers
+function saveProducts(){ localStorage.setItem(KEY_PRODUCTS, JSON.stringify(products)); }
+function saveSales(){ localStorage.setItem(KEY_SALES, JSON.stringify(sales)); }
+function saveTicketCounter(){ localStorage.setItem(KEY_TICKET, ticketCounter.toString()); }
+function formatQ(v){ return 'Q' + Number(v).toFixed(2); }
+function todayKey(date=new Date()){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().slice(0,10); }
 
-    // 3) imprimir
-    // Damos un microtiempo para que el DOM inyectado se renderice antes de imprimir
-    setTimeout(()=>window.print(), 150);
-  }
+// Render products
+function renderProducts(){ productsList.innerHTML='';
+  if(products.length===0){ productsList.innerHTML='<li class="center muted">No hay productos aún.</li>'; return; }
+  products.forEach((p, idx)=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<div><strong>${p.name}</strong><div class="muted small">Precio: ${formatQ(p.price)} ${p.stock!==undefined?(' · Stock: '+p.stock):''}</div></div>
+                    <div class="product-actions">
+                      <button onclick="addToCart(${idx})">Agregar</button>
+                      <button onclick="editProduct(${idx})" class="ghost">Editar</button>
+                      <button onclick="deleteProduct(${idx})" class="danger">Eliminar</button>
+                    </div>`;
+    productsList.appendChild(li);
+  });
+}
+
+// Product operations
+addProductBtn.addEventListener('click', ()=>{
+  const name = (p_name.value||'').trim();
+  const price = parseFloat(p_price.value) || 0;
+  const stock = p_stock.value!==''? parseInt(p_stock.value,10) : undefined;
+  if(!name){ alert('Ingrese nombre del producto'); return; }
+  products.push({name:name, price:price, stock:stock});
+  saveProducts(); renderProducts(); p_name.value=''; p_price.value=''; p_stock.value='';
+});
+
+clearProductsBtn.addEventListener('click', ()=>{
+  if(!confirm('¿Borrar TODOS los productos? Esta acción no se puede deshacer.')) return;
+  products=[]; saveProducts(); renderProducts();
+});
+
+window.editProduct = function(idx){
+  const p = products[idx];
+  const newName = prompt('Editar nombre', p.name);
+  if(newName===null) return;
+  const newPrice = prompt('Editar precio', p.price);
+  if(newPrice===null) return;
+  const newStock = prompt('Editar stock (vacío para indefinido)', p.stock===undefined?'':p.stock);
+  if(newStock===null) return;
+  p.name = newName.trim();
+  p.price = parseFloat(newPrice) || 0;
+  p.stock = newStock===''? undefined : parseInt(newStock,10);
+  products[idx]=p; saveProducts(); renderProducts();
+}
+
+window.deleteProduct = function(idx){ if(!confirm('Eliminar producto?')) return; products.splice(idx,1); saveProducts(); renderProducts(); }
+
+// Cart operations
+window.addToCart = function(idx){
+  const p = products[idx];
+  const existing = cart.find(c=>c.name===p.name && c.price===p.price);
+  if(existing){ existing.qty += 1; }
+  else{ cart.push({name:p.name, price:p.price, qty:1}); }
+  renderCart();
+}
+
+function renderCart(){ cartTableBody.innerHTML='';
+  if(cart.length===0){ cartTableBody.innerHTML='<tr><td colspan="5" class="center muted">Carrito vacío</td></tr>'; cartTotalEl.textContent='Q0.00'; return; }
+  let total = 0;
+  cart.forEach((item, i)=>{
+    const row = document.createElement('tr');
+    const lineTotal = item.qty * item.price; total += lineTotal;
+    row.innerHTML = `<td><input type="number" min="1" value="${item.qty}" style="width:70px" onchange="updateQty(${i}, this.value)"></td>
+                     <td>${item.name}</td>
+                     <td class="right">${formatQ(item.price)}</td>
+                     <td class="right">${formatQ(lineTotal)}</td>
+                     <td class="right"><button onclick="removeItem(${i})" class="ghost">Eliminar</button></td>`;
+    cartTableBody.appendChild(row);
+  });
+  cartTotalEl.textContent = formatQ(total);
+}
+
+window.updateQty = function(i, v){ const q = parseInt(v,10) || 1; cart[i].qty = q; renderCart(); }
+window.removeItem = function(i){ cart.splice(i,1); renderCart(); }
+clearCartBtn.addEventListener('click', ()=>{ if(confirm('Limpiar venta actual?')){ cart=[]; renderCart(); } });
+
+// Pay and register sale
+payBtn.addEventListener('click', ()=>{
+  if(cart.length===0){ alert('Carrito vacío'); return; }
+  const client = (clientNameEl.value||'').trim();
+  const total = cart.reduce((s,i)=>s + (i.price*i.qty), 0);
+  const sale = { id: ticketCounter, client:client, items: JSON.parse(JSON.stringify(cart)), total: total, date: new Date().toISOString() };
+  // save
+  sales.push(sale); saveSales();
+  ticketCounter += 1; saveTicketCounter();
+  // generate printable ticket
+  generateTicket(sale);
+  // clear cart
+  cart = []; renderCart(); clientNameEl.value=''; renderSales();
+});
+
+function generateTicket(sale){
+  const w = window.open('', '_blank', 'width=380,height=800');
+  const date = new Date(sale.date);
+  const header = `<div style="text-align:center;font-family:monospace;">
+    <h3>MarckBusiness</h3>
+    <div>Ticket #: ${sale.id}</div>
+    <div>${date.toLocaleString()}</div>
+    <hr/>
+  </div>`;
+  let itemsHtml = '<table style="width:100%;font-family:monospace;">';
+  sale.items.forEach(it=>{
+    itemsHtml += `<tr><td>${it.qty} x ${it.name}</td><td style="text-align:right">Q${(it.price*it.qty).toFixed(2)}</td></tr>`;
+  });
+  itemsHtml += `</table>`;
+  const footer = `<div style="font-family:monospace;margin-top:12px;text-align:left">
+    <hr/>
+    <div><strong>Total: Q${sale.total.toFixed(2)}</strong></div>
+    <div style="margin-top:6px">¡Gracias por su compra!</div>
+    <div style="margin-top:8px;font-size:0.85rem;color:#555">MarckBusiness © 2025 — Todos los derechos reservados</div>
+  </div>`;
+  w.document.write(`<!doctype html><html><head><title>Ticket ${sale.id}</title><meta name=viewport content='width=device-width,initial-scale=1'></head><body style='width:320px;margin:0;padding:12px'>${header}${itemsHtml}${footer}</body></html>`);
+  w.document.close();
+  // give time to render then print
+  setTimeout(()=>{ w.print(); /* w.close(); */ }, 600);
+}
+
+// Sales log
+function renderSales(){
+  // filter today's sales
+  const today = todayKey();
+  const todaySales = sales.filter(s=> s.date.slice(0,10) === today);
+  salesList.innerHTML = '';
+  if(todaySales.length===0){ salesList.innerHTML = '<li class="center muted">No hay ventas hoy.</li>'; salesCount.textContent='0'; salesTotal.textContent='Q0.00'; return; }
+  let total = 0;
+  todaySales.forEach(s=>{
+    total += s.total;
+    const li = document.createElement('li');
+    const date = new Date(s.date);
+    li.innerHTML = `<div><strong>Ticket #${s.id}</strong><div class="muted small">${date.toLocaleTimeString()} ${s.client?('· '+s.client):''}</div></div>
+                    <div>${formatQ(s.total)}</div>`;
+    salesList.appendChild(li);
+  });
+  salesCount.textContent = todaySales.length;
+  salesTotal.textContent = formatQ(total);
+}
+
+printDayTotal.addEventListener('click', ()=>{
+  const today = todayKey();
+  const todaySales = sales.filter(s=> s.date.slice(0,10) === today);
+  if(todaySales.length===0){ alert('No hay ventas hoy.'); return; }
+  const total = todaySales.reduce((a,b)=>a + b.total, 0);
+  // build ticket
+  const w = window.open('', '_blank', 'width=380,height=800');
+  let items = '';
+  todaySales.forEach(s=>{
+    items += `<div>${s.items.length} items - Ticket #${s.id} - ${formatQ(s.total)}</div>`;
+  });
+  w.document.write(`<!doctype html><html><head><title>Total del día</title></head><body style='width:320px;margin:0;padding:12px;font-family:monospace'>
+    <div style='text-align:center'><h3>MarckBusiness</h3><div>Resumen de ventas ${today}</div><hr/></div>
+    ${items}
+    <hr/>
+    <div><strong>Total del día: Q${total.toFixed(2)}</strong></div>
+    <div style='margin-top:8px;color:#555'>MarckBusiness © 2025 — Todos los derechos reservados</div>
+    </body></html>`);
+  w.document.close(); setTimeout(()=>{ w.print(); }, 600);
+});
+
+// Delete today's sales
+deleteSalesBtn.addEventListener('click', ()=>{
+  if(!confirm('¿Borrar las ventas registradas en el almacenamiento local?')) return;
+  const today = todayKey();
+  sales = sales.filter(s=> s.date.slice(0,10) !== today);
+  saveSales(); renderSales(); alert('Ventas de hoy borradas.');
+});
+
+// Init
+function init(){ renderProducts(); renderCart(); renderSales(); }
+init();
 </script>
 </body>
 </html>
