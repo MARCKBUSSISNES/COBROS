@@ -1,331 +1,192 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistema de Cobro - MarckBusiness</title>
-  <style>
-    /* Básicos */
-    :root{ --green:#075E54; --light:#25D366; --card:#fff; --bg:#f4f7fb; }
-    body{font-family:Roboto,Arial,sans-serif;background:var(--bg);margin:0;padding:28px;}
-    .wrap{max-width:1100px;margin:auto;display:grid;grid-template-columns:380px 1fr 340px;gap:20px;align-items:start}
-    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,0.08)}
-    h2{margin:0 0 10px 0;color:var(--green)}
-    label{font-size:0.9rem;color:#333}
-    input[type=text], input[type=number], textarea, select{width:100%;padding:10px;margin-top:6px;margin-bottom:12px;border-radius:8px;border:1px solid #ddd;box-sizing:border-box}
-    button{background:var(--light);color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
-    .muted{color:#666;font-size:0.9rem}
-    .small{font-size:0.85rem}
-    ul.list{list-style:none;padding:0;margin:0;max-height:360px;overflow:auto}
-    ul.list li{display:flex;justify-content:space-between;padding:8px 6px;border-bottom:1px solid #f0f0f0}
-    .product-actions button{margin-left:6px;padding:6px 10px;border-radius:8px}
-    table{width:100%;border-collapse:collapse}
-    table th, table td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-    .right{text-align:right}
-    .controls{display:flex;gap:8px}
-    .danger{background:#e74c3c}
-    .ghost{background:#e0e0e0;color:#333}
-    .center{text-align:center}
-    .small-note{font-size:0.85rem;color:#555}
-
-    /* Ticket (preview/print) */
-    @media print{
-      body *{visibility:visible}
-    }
-
-    /* Responsive */
-    @media (max-width:1000px){.wrap{grid-template-columns:1fr;}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦐 PARQUEO CEVICHERÍA 🦐</title>
+<style>
+:root {
+    --bg-dark: #121212;
+    --accent: #ff6600;
+    --white: #ffffff;
+}
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Courier New', monospace; }
+body {
+    background: url('121212.png') center/cover no-repeat fixed;
+    color: var(--white);
+    min-height: 100vh;
+    padding: 1rem;
+}
+header {
+    text-align:center;
+    font-size:2rem;
+    font-weight:bold;
+    margin-bottom:2rem;
+}
+.button-grid {
+    display:flex;
+    gap:3rem;
+    justify-content:center;
+    margin-bottom:2rem;
+}
+.button-grid img {
+    width:250px;
+    height:250px;
+    cursor:pointer;
+    border-radius:15px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.button-grid img:hover { transform:scale(1.1); box-shadow:0 0 25px var(--accent);}
+#codigoSalida {
+    width:60%;
+    font-size:2rem;
+    padding:1rem;
+    margin:0 auto 2rem auto;
+    display:block;
+    border-radius:15px;
+    text-align:center;
+}
+.listado {
+    background: rgba(0,0,0,0.8);
+    padding:1rem;
+    border-radius:15px;
+    width:100%;
+    max-width:1200px;
+    min-height:200px;
+    overflow-y:auto;
+}
+.listado h2 { text-align:center; color:var(--accent); font-size:1.8rem; margin-bottom:1rem; }
+.listado ul li {
+    font-size:2rem;
+    padding:0.5rem 0;
+    border-bottom:2px solid var(--accent);
+    display:flex;
+    justify-content:space-between;
+}
+footer {
+    margin-top:2rem;
+    text-align:center;
+    padding:1rem;
+    background: rgba(0,0,0,0.7);
+    border-radius:10px;
+}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- Crear producto -->
-    <div class="card">
-      <h2>Crear / Administrar Productos</h2>
-      <div class="small-note">Los productos se guardan localmente en su navegador (localStorage). Si desea guardarlos en GitHub/repo, puedo explicar la opción con backend).</div>
+<header>🦐 PARQUEO CEVICHERÍA 🦐</header>
 
-      <label>Nombre del producto</label>
-      <input id="p_name" type="text" placeholder="Ej: Polo blanco" />
+<div class="button-grid">
+    <img src="CARRO.png" id="btnCarro" alt="Carro">
+    <img src="MOTO.png" id="btnMoto" alt="Moto">
+</div>
 
-      <label>Precio (Q)</label>
-      <input id="p_price" type="number" min="0" step="0.01" placeholder="0.00" />
+<input type="text" id="codigoSalida" placeholder="Ingrese código para salida">
 
-      <label>Stock (opcional)</label>
-      <input id="p_stock" type="number" min="0" step="1" placeholder="Cantidad en inventario" />
+<div class="listado">
+    <h2>Vehículos Ingresados</h2>
+    <ul id="vehiculosList"></ul>
+</div>
 
-      <div style="display:flex;gap:8px">
-        <button id="addProductBtn">Agregar producto</button>
-        <button id="clearProductsBtn" class="danger">Borrar todo</button>
-      </div>
+<footer>*POR FAVOR NO PIERDA ESTE DOCUMENTO*</footer>
 
-      <hr />
-      <h3 class="small">Productos disponibles</h3>
-      <ul id="productsList" class="list"></ul>
-    </div>
-
-    <!-- Panel de venta -->
-    <div class="card">
-      <h2>Panel de venta</h2>
-      <div class="small-note">Haga clic en "Agregar" en un producto para añadirlo a la venta. Ajuste cantidad desde el panel de venta.</div>
-
-      <table id="cartTable">
-        <thead><tr><th>Cant</th><th>Producto</th><th class="right">Precio</th><th class="right">Total</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
-        <div>
-          <label>Cliente (opcional)</label>
-          <input id="clientName" placeholder="Nombre del cliente" />
-        </div>
-        <div style="text-align:right">
-          <div class="muted">Total</div>
-          <div id="cartTotal" style="font-size:1.4rem;font-weight:700">Q0.00</div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <button id="payBtn">Cobrar y Generar ticket</button>
-        <button id="clearCartBtn" class="ghost">Limpiar venta</button>
-      </div>
-
-      <div class="small-note" style="margin-top:10px">Ticket 80mm imprimible. Se genera un número de ticket consecutivo.</div>
-    </div>
-
-    <!-- Ventas del día -->
-    <div class="card">
-      <h2>Registro de ventas (hoy)</h2>
-      <div id="salesListWrap">
-        <ul id="salesList" class="list"></ul>
-      </div>
-
-      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div class="muted">Ventas hoy</div>
-          <div id="salesCount">0</div>
-        </div>
-        <div style="text-align:right">
-          <div class="muted">Total del día</div>
-          <div id="salesTotal">Q0.00</div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button id="printDayTotal">Imprimir total 80mm</button>
-        <button id="deleteSales" class="danger">Borrar ventas (hoy)</button>
-      </div>
-
-      <div class="small-note" style="margin-top:10px">Nota: borrar ventas eliminará solo las ventas registradas en el almacenamiento local.</div>
-    </div>
-  </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// Keys localStorage
-const KEY_PRODUCTS = 'mb_products_v1';
-const KEY_SALES = 'mb_sales_v1';
-const KEY_TICKET = 'mb_ticket_counter_v1';
+const vehiculos = JSON.parse(localStorage.getItem('vehiculos')||'[]');
+const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre')||'[]');
+const lista = document.getElementById('vehiculosList');
+const codigoSalida = document.getElementById('codigoSalida');
 
-// Estado en memoria
-let products = JSON.parse(localStorage.getItem(KEY_PRODUCTS) || '[]');
-let sales = JSON.parse(localStorage.getItem(KEY_SALES) || '[]');
-let ticketCounter = parseInt(localStorage.getItem(KEY_TICKET) || '1', 10);
-let cart = [];
+function guardarLocal(){ localStorage.setItem('vehiculos', JSON.stringify(vehiculos)); }
+function guardarCierre(){ localStorage.setItem('vehiculosCierre', JSON.stringify(vehiculosCierre)); }
 
-// Elementos DOM
-const productsList = document.getElementById('productsList');
-const addProductBtn = document.getElementById('addProductBtn');
-const clearProductsBtn = document.getElementById('clearProductsBtn');
-const p_name = document.getElementById('p_name');
-const p_price = document.getElementById('p_price');
-const p_stock = document.getElementById('p_stock');
-
-const cartTableBody = document.querySelector('#cartTable tbody');
-const cartTotalEl = document.getElementById('cartTotal');
-const payBtn = document.getElementById('payBtn');
-const clearCartBtn = document.getElementById('clearCartBtn');
-const clientNameEl = document.getElementById('clientName');
-
-const salesList = document.getElementById('salesList');
-const salesCount = document.getElementById('salesCount');
-const salesTotal = document.getElementById('salesTotal');
-const printDayTotal = document.getElementById('printDayTotal');
-const deleteSalesBtn = document.getElementById('deleteSales');
-
-// Helpers
-function saveProducts(){ localStorage.setItem(KEY_PRODUCTS, JSON.stringify(products)); }
-function saveSales(){ localStorage.setItem(KEY_SALES, JSON.stringify(sales)); }
-function saveTicketCounter(){ localStorage.setItem(KEY_TICKET, ticketCounter.toString()); }
-function formatQ(v){ return 'Q' + Number(v).toFixed(2); }
-function todayKey(date=new Date()){ return new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().slice(0,10); }
-
-// Render products
-function renderProducts(){ productsList.innerHTML='';
-  if(products.length===0){ productsList.innerHTML='<li class="center muted">No hay productos aún.</li>'; return; }
-  products.forEach((p, idx)=>{
-    const li = document.createElement('li');
-    li.innerHTML = `<div><strong>${p.name}</strong><div class="muted small">Precio: ${formatQ(p.price)} ${p.stock!==undefined?(' · Stock: '+p.stock):''}</div></div>
-                    <div class="product-actions">
-                      <button onclick="addToCart(${idx})">Agregar</button>
-                      <button onclick="editProduct(${idx})" class="ghost">Editar</button>
-                      <button onclick="deleteProduct(${idx})" class="danger">Eliminar</button>
-                    </div>`;
-    productsList.appendChild(li);
-  });
+function actualizarLista(){
+    lista.innerHTML='';
+    vehiculos.forEach(v=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${v.simbolo}  ${v.codigo}</span><span>${v.hora}</span>`;
+        lista.appendChild(li);
+    });
 }
 
-// Product operations
-addProductBtn.addEventListener('click', ()=>{
-  const name = (p_name.value||'').trim();
-  const price = parseFloat(p_price.value) || 0;
-  const stock = p_stock.value!==''? parseInt(p_stock.value,10) : undefined;
-  if(!name){ alert('Ingrese nombre del producto'); return; }
-  products.push({name:name, price:price, stock:stock});
-  saveProducts(); renderProducts(); p_name.value=''; p_price.value=''; p_stock.value='';
-});
-
-clearProductsBtn.addEventListener('click', ()=>{
-  if(!confirm('¿Borrar TODOS los productos? Esta acción no se puede deshacer.')) return;
-  products=[]; saveProducts(); renderProducts();
-});
-
-window.editProduct = function(idx){
-  const p = products[idx];
-  const newName = prompt('Editar nombre', p.name);
-  if(newName===null) return;
-  const newPrice = prompt('Editar precio', p.price);
-  if(newPrice===null) return;
-  const newStock = prompt('Editar stock (vacío para indefinido)', p.stock===undefined?'':p.stock);
-  if(newStock===null) return;
-  p.name = newName.trim();
-  p.price = parseFloat(newPrice) || 0;
-  p.stock = newStock===''? undefined : parseInt(newStock,10);
-  products[idx]=p; saveProducts(); renderProducts();
+function generarCodigo(){
+    let codigo;
+    do { codigo = Math.floor(1000 + Math.random()*9000); }
+    while(vehiculos.some(v=>v.codigo===codigo));
+    return codigo;
 }
 
-window.deleteProduct = function(idx){ if(!confirm('Eliminar producto?')) return; products.splice(idx,1); saveProducts(); renderProducts(); }
-
-// Cart operations
-window.addToCart = function(idx){
-  const p = products[idx];
-  const existing = cart.find(c=>c.name===p.name && c.price===p.price);
-  if(existing){ existing.qty += 1; }
-  else{ cart.push({name:p.name, price:p.price, qty:1}); }
-  renderCart();
+// Ticket 80mm
+function imprimirTicket(codigo, simbolo, hora, tipo, ingreso=true){
+    const ticketHTML = `
+        <div style="width:280px; padding:15px; text-align:center; font-family:monospace;">
+            <h1 style="font-size:28px; margin-bottom:10px;">🦐 PARQUEO CEVICHERÍA 🦐</h1>
+            <p style="font-size:26px; margin:5px;">${simbolo}</p>
+            <p style="font-size:26px; margin:5px;">Código: <strong>${codigo}</strong></p>
+            <p style="font-size:26px; margin:5px;">Hora: <strong>${hora}</strong></p>
+            ${!ingreso?`<p style="font-size:26px; margin:5px;">Tarifa: Q${tipo==='CARRO'?10:5}.00</p>`:''}
+            <p style="font-size:18px; margin-top:10px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
+        </div>
+    `;
+    const win = window.open('', '_blank', 'width=300,height=500');
+    win.document.write(ticketHTML);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
 }
 
-function renderCart(){ cartTableBody.innerHTML='';
-  if(cart.length===0){ cartTableBody.innerHTML='<tr><td colspan="5" class="center muted">Carrito vacío</td></tr>'; cartTotalEl.textContent='Q0.00'; return; }
-  let total = 0;
-  cart.forEach((item, i)=>{
-    const row = document.createElement('tr');
-    const lineTotal = item.qty * item.price; total += lineTotal;
-    row.innerHTML = `<td><input type="number" min="1" value="${item.qty}" style="width:70px" onchange="updateQty(${i}, this.value)"></td>
-                     <td>${item.name}</td>
-                     <td class="right">${formatQ(item.price)}</td>
-                     <td class="right">${formatQ(lineTotal)}</td>
-                     <td class="right"><button onclick="removeItem(${i})" class="ghost">Eliminar</button></td>`;
-    cartTableBody.appendChild(row);
-  });
-  cartTotalEl.textContent = formatQ(total);
+function agregarVehiculo(tipo){
+    const codigo = generarCodigo();
+    const hora = new Date().toLocaleString();
+    const simbolo = tipo==='CARRO'?'🚗':'🏍️';
+    const veh = {codigo,hora,tipo,simbolo};
+    vehiculos.push(veh);
+    vehiculosCierre.push(veh);
+    guardarLocal(); guardarCierre();
+    actualizarLista();
+    imprimirTicket(codigo,simbolo,hora,tipo,true);
 }
 
-window.updateQty = function(i, v){ const q = parseInt(v,10) || 1; cart[i].qty = q; renderCart(); }
-window.removeItem = function(i){ cart.splice(i,1); renderCart(); }
-clearCartBtn.addEventListener('click', ()=>{ if(confirm('Limpiar venta actual?')){ cart=[]; renderCart(); } });
-
-// Pay and register sale
-payBtn.addEventListener('click', ()=>{
-  if(cart.length===0){ alert('Carrito vacío'); return; }
-  const client = (clientNameEl.value||'').trim();
-  const total = cart.reduce((s,i)=>s + (i.price*i.qty), 0);
-  const sale = { id: ticketCounter, client:client, items: JSON.parse(JSON.stringify(cart)), total: total, date: new Date().toISOString() };
-  // save
-  sales.push(sale); saveSales();
-  ticketCounter += 1; saveTicketCounter();
-  // generate printable ticket
-  generateTicket(sale);
-  // clear cart
-  cart = []; renderCart(); clientNameEl.value=''; renderSales();
-});
-
-function generateTicket(sale){
-  const w = window.open('', '_blank', 'width=380,height=800');
-  const date = new Date(sale.date);
-  const header = `<div style="text-align:center;font-family:monospace;">
-    <h3>MarckBusiness</h3>
-    <div>Ticket #: ${sale.id}</div>
-    <div>${date.toLocaleString()}</div>
-    <hr/>
-  </div>`;
-  let itemsHtml = '<table style="width:100%;font-family:monospace;">';
-  sale.items.forEach(it=>{
-    itemsHtml += `<tr><td>${it.qty} x ${it.name}</td><td style="text-align:right">Q${(it.price*it.qty).toFixed(2)}</td></tr>`;
-  });
-  itemsHtml += `</table>`;
-  const footer = `<div style="font-family:monospace;margin-top:12px;text-align:left">
-    <hr/>
-    <div><strong>Total: Q${sale.total.toFixed(2)}</strong></div>
-    <div style="margin-top:6px">¡Gracias por su compra!</div>
-    <div style="margin-top:8px;font-size:0.85rem;color:#555">MarckBusiness © 2025 — Todos los derechos reservados</div>
-  </div>`;
-  w.document.write(`<!doctype html><html><head><title>Ticket ${sale.id}</title><meta name=viewport content='width=device-width,initial-scale=1'></head><body style='width:320px;margin:0;padding:12px'>${header}${itemsHtml}${footer}</body></html>`);
-  w.document.close();
-  // give time to render then print
-  setTimeout(()=>{ w.print(); /* w.close(); */ }, 600);
+function salidaVehiculo(){
+    const code = parseInt(codigoSalida.value);
+    if(isNaN(code)) return alert('Ingrese un código válido');
+    const index = vehiculos.findIndex(v=>v.codigo===code);
+    if(index===-1) return alert('Código no encontrado');
+    const v = vehiculos.splice(index,1)[0];
+    guardarLocal();
+    actualizarLista();
+    imprimirTicket(v.codigo,v.simbolo,new Date().toLocaleString(),v.tipo,false);
+    codigoSalida.value=''; codigoSalida.focus();
 }
 
-// Sales log
-function renderSales(){
-  // filter today's sales
-  const today = todayKey();
-  const todaySales = sales.filter(s=> s.date.slice(0,10) === today);
-  salesList.innerHTML = '';
-  if(todaySales.length===0){ salesList.innerHTML = '<li class="center muted">No hay ventas hoy.</li>'; salesCount.textContent='0'; salesTotal.textContent='Q0.00'; return; }
-  let total = 0;
-  todaySales.forEach(s=>{
-    total += s.total;
-    const li = document.createElement('li');
-    const date = new Date(s.date);
-    li.innerHTML = `<div><strong>Ticket #${s.id}</strong><div class="muted small">${date.toLocaleTimeString()} ${s.client?('· '+s.client):''}</div></div>
-                    <div>${formatQ(s.total)}</div>`;
-    salesList.appendChild(li);
-  });
-  salesCount.textContent = todaySales.length;
-  salesTotal.textContent = formatQ(total);
+document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
+document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
+codigoSalida.addEventListener('keypress', e=>{ if(e.key==='Enter') salidaVehiculo(); });
+actualizarLista();
+
+// Cierre solo resumen
+function cierreResumenPDF(){
+    if(vehiculos.length>0){ alert('No se puede realizar el cierre: aún hay vehículos dentro.'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("🦐 PARQUEO CEVICHERÍA 🦐",105,20,{align:'center'});
+    let totalCarros=0,totalMotos=0;
+    vehiculosCierre.forEach(v=>{ if(v.tipo==='CARRO') totalCarros++; else totalMotos++; });
+    doc.setFontSize(18);
+    doc.text(`Total Carros: ${totalCarros}`,10,40);
+    doc.text(`Total Motos: ${totalMotos}`,10,60);
+    doc.text(`Monto Total: Q${totalCarros*10 + totalMotos*5}.00`,10,80);
+    doc.save(`Cierre_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`);
+    localStorage.removeItem('vehiculos'); localStorage.removeItem('vehiculosCierre');
+    vehiculos.length=0; vehiculosCierre.length=0; actualizarLista();
 }
 
-printDayTotal.addEventListener('click', ()=>{
-  const today = todayKey();
-  const todaySales = sales.filter(s=> s.date.slice(0,10) === today);
-  if(todaySales.length===0){ alert('No hay ventas hoy.'); return; }
-  const total = todaySales.reduce((a,b)=>a + b.total, 0);
-  // build ticket
-  const w = window.open('', '_blank', 'width=380,height=800');
-  let items = '';
-  todaySales.forEach(s=>{
-    items += `<div>${s.items.length} items - Ticket #${s.id} - ${formatQ(s.total)}</div>`;
-  });
-  w.document.write(`<!doctype html><html><head><title>Total del día</title></head><body style='width:320px;margin:0;padding:12px;font-family:monospace'>
-    <div style='text-align:center'><h3>MarckBusiness</h3><div>Resumen de ventas ${today}</div><hr/></div>
-    ${items}
-    <hr/>
-    <div><strong>Total del día: Q${total.toFixed(2)}</strong></div>
-    <div style='margin-top:8px;color:#555'>MarckBusiness © 2025 — Todos los derechos reservados</div>
-    </body></html>`);
-  w.document.close(); setTimeout(()=>{ w.print(); }, 600);
-});
-
-// Delete today's sales
-deleteSalesBtn.addEventListener('click', ()=>{
-  if(!confirm('¿Borrar las ventas registradas en el almacenamiento local?')) return;
-  const today = todayKey();
-  sales = sales.filter(s=> s.date.slice(0,10) !== today);
-  saveSales(); renderSales(); alert('Ventas de hoy borradas.');
-});
-
-// Init
-function init(){ renderProducts(); renderCart(); renderSales(); }
-init();
+// Puedes asignar el cierre a un botón extra si quieres:
+// const btnCierre = document.createElement('button');
+// btnCierre.textContent='Cierre Día';
+// document.body.appendChild(btnCierre);
+// btnCierre.addEventListener('click',cierreResumenPDF);
 </script>
 </body>
 </html>
