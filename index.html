@@ -1,18 +1,19 @@
-<!DOCTYPE html>
+B<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>✨ Dashboard de Tareas ✨</title>
+<title>🌙 Dark Dashboard de Tareas</title>
 <style>
     :root {
-        --primary: #4f46e5;
-        --secondary: #6366f1;
-        --accent: #f59e0b;
-        --bg: #f3f4f6;
-        --card: #ffffff;
-        --text-dark: #111827;
-        --text-light: #6b7280;
+        --bg-dark: #121212;
+        --card-dark: #1f1f1f;
+        --primary: #bb86fc;
+        --secondary: #3700b3;
+        --accent: #03dac6;
+        --text-light: #e0e0e0;
+        --text-muted: #a1a1a1;
+        --completed: #03dac6;
     }
 
     * {
@@ -23,7 +24,8 @@
     }
 
     body {
-        background: var(--bg);
+        background: var(--bg-dark);
+        color: var(--text-light);
         min-height: 100vh;
         display: flex;
         justify-content: center;
@@ -32,12 +34,12 @@
     }
 
     .dashboard {
-        background: var(--card);
+        background: var(--card-dark);
         width: 100%;
         max-width: 600px;
         border-radius: 15px;
         padding: 2rem;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.6);
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
@@ -58,8 +60,14 @@
         flex: 1;
         padding: 0.8rem;
         border-radius: 10px;
-        border: 1px solid #d1d5db;
+        border: 1px solid #333;
         font-size: 1rem;
+        background: #1a1a1a;
+        color: var(--text-light);
+    }
+
+    input::placeholder {
+        color: var(--text-muted);
     }
 
     button {
@@ -84,7 +92,7 @@
     }
 
     li {
-        background: var(--bg);
+        background: #1a1a1a;
         padding: 1rem;
         margin-bottom: 0.5rem;
         border-radius: 10px;
@@ -92,18 +100,22 @@
         justify-content: space-between;
         align-items: center;
         transition: 0.3s;
+        border: 1px solid #333;
     }
 
     li.completed {
-        background: #d1fae5;
+        background: #00332e;
         text-decoration: line-through;
-        color: #065f46;
+        color: var(--completed);
     }
 
     li button {
         background: var(--accent);
         padding: 0.4rem 0.8rem;
         font-size: 0.9rem;
+        color: #000;
+        border-radius: 8px;
+        border: none;
     }
 
     li button:hover {
@@ -112,15 +124,28 @@
 
     .footer {
         text-align: center;
-        color: var(--text-light);
+        color: var(--text-muted);
         font-size: 0.85rem;
+    }
+
+    /* Scrollbar oscuro */
+    ul::-webkit-scrollbar {
+        width: 8px;
+    }
+    ul::-webkit-scrollbar-track {
+        background: #1a1a1a;
+        border-radius: 10px;
+    }
+    ul::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
     }
 </style>
 </head>
 <body>
 
 <div class="dashboard">
-    <h1>✨ Mis Tareas ✨</h1>
+    <h1>🌙 Mis Tareas</h1>
 
     <div class="input-group">
         <input type="text" id="taskInput" placeholder="Agregar nueva tarea...">
@@ -130,7 +155,7 @@
     <ul id="taskList"></ul>
 
     <div class="footer">
-        Dashboard de prueba - GitHub Pages
+        Dark Dashboard - Prueba GitHub Pages
     </div>
 </div>
 
