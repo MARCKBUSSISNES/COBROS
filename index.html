@@ -3,190 +3,194 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🦐 PARQUEO CEVICHERÍA 🦐</title>
+<title>✨ Dashboard de Tareas ✨</title>
 <style>
-:root {
-    --bg-dark: #121212;
-    --accent: #ff6600;
-    --white: #ffffff;
-}
-* { margin:0; padding:0; box-sizing:border-box; font-family:'Courier New', monospace; }
-body {
-    background: url('121212.png') center/cover no-repeat fixed;
-    color: var(--white);
-    min-height: 100vh;
-    padding: 1rem;
-}
-header {
-    text-align:center;
-    font-size:2rem;
-    font-weight:bold;
-    margin-bottom:2rem;
-}
-.button-grid {
-    display:flex;
-    gap:3rem;
-    justify-content:center;
-    margin-bottom:2rem;
-}
-.button-grid img {
-    width:250px;
-    height:250px;
-    cursor:pointer;
-    border-radius:15px;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-.button-grid img:hover { transform:scale(1.1); box-shadow:0 0 25px var(--accent);}
-#codigoSalida {
-    width:60%;
-    font-size:2rem;
-    padding:1rem;
-    margin:0 auto 2rem auto;
-    display:block;
-    border-radius:15px;
-    text-align:center;
-}
-.listado {
-    background: rgba(0,0,0,0.8);
-    padding:1rem;
-    border-radius:15px;
-    width:100%;
-    max-width:1200px;
-    min-height:200px;
-    overflow-y:auto;
-}
-.listado h2 { text-align:center; color:var(--accent); font-size:1.8rem; margin-bottom:1rem; }
-.listado ul li {
-    font-size:2rem;
-    padding:0.5rem 0;
-    border-bottom:2px solid var(--accent);
-    display:flex;
-    justify-content:space-between;
-}
-footer {
-    margin-top:2rem;
-    text-align:center;
-    padding:1rem;
-    background: rgba(0,0,0,0.7);
-    border-radius:10px;
-}
+    :root {
+        --primary: #4f46e5;
+        --secondary: #6366f1;
+        --accent: #f59e0b;
+        --bg: #f3f4f6;
+        --card: #ffffff;
+        --text-dark: #111827;
+        --text-light: #6b7280;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+        background: var(--bg);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 2rem;
+    }
+
+    .dashboard {
+        background: var(--card);
+        width: 100%;
+        max-width: 600px;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    h1 {
+        text-align: center;
+        color: var(--primary);
+        font-size: 2rem;
+    }
+
+    .input-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    input[type="text"] {
+        flex: 1;
+        padding: 0.8rem;
+        border-radius: 10px;
+        border: 1px solid #d1d5db;
+        font-size: 1rem;
+    }
+
+    button {
+        padding: 0.8rem 1.2rem;
+        border: none;
+        border-radius: 10px;
+        background: var(--primary);
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: var(--secondary);
+    }
+
+    ul {
+        list-style: none;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    li {
+        background: var(--bg);
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: 0.3s;
+    }
+
+    li.completed {
+        background: #d1fae5;
+        text-decoration: line-through;
+        color: #065f46;
+    }
+
+    li button {
+        background: var(--accent);
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+    li button:hover {
+        opacity: 0.8;
+    }
+
+    .footer {
+        text-align: center;
+        color: var(--text-light);
+        font-size: 0.85rem;
+    }
 </style>
 </head>
 <body>
-<header>🦐 PARQUEO CEVICHERÍA 🦐</header>
 
-<div class="button-grid">
-    <img src="CARRO.png" id="btnCarro" alt="Carro">
-    <img src="MOTO.png" id="btnMoto" alt="Moto">
+<div class="dashboard">
+    <h1>✨ Mis Tareas ✨</h1>
+
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Agregar nueva tarea...">
+        <button id="addBtn">Agregar</button>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <div class="footer">
+        Dashboard de prueba - GitHub Pages
+    </div>
 </div>
 
-<input type="text" id="codigoSalida" placeholder="Ingrese código para salida">
-
-<div class="listado">
-    <h2>Vehículos Ingresados</h2>
-    <ul id="vehiculosList"></ul>
-</div>
-
-<footer>*POR FAVOR NO PIERDA ESTE DOCUMENTO*</footer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const vehiculos = JSON.parse(localStorage.getItem('vehiculos')||'[]');
-const vehiculosCierre = JSON.parse(localStorage.getItem('vehiculosCierre')||'[]');
-const lista = document.getElementById('vehiculosList');
-const codigoSalida = document.getElementById('codigoSalida');
+const taskInput = document.getElementById('taskInput');
+const addBtn = document.getElementById('addBtn');
+const taskList = document.getElementById('taskList');
 
-function guardarLocal(){ localStorage.setItem('vehiculos', JSON.stringify(vehiculos)); }
-function guardarCierre(){ localStorage.setItem('vehiculosCierre', JSON.stringify(vehiculosCierre)); }
+// Cargar tareas desde localStorage
+let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
 
-function actualizarLista(){
-    lista.innerHTML='';
-    vehiculos.forEach(v=>{
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+function renderTasks() {
+    taskList.innerHTML = '';
+    tasks.forEach((t, idx) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${v.simbolo}  ${v.codigo}</span><span>${v.hora}</span>`;
-        lista.appendChild(li);
+        li.className = t.completed ? 'completed' : '';
+        li.innerHTML = `
+            <span>${t.text}</span>
+            <div>
+                <button onclick="toggleComplete(${idx})">${t.completed ? '↺' : '✔'}</button>
+                <button onclick="deleteTask(${idx})">🗑</button>
+            </div>
+        `;
+        taskList.appendChild(li);
     });
 }
 
-function generarCodigo(){
-    let codigo;
-    do { codigo = Math.floor(1000 + Math.random()*9000); }
-    while(vehiculos.some(v=>v.codigo===codigo));
-    return codigo;
+function addTask() {
+    const text = taskInput.value.trim();
+    if(text==='') return alert('Escribe algo primero');
+    tasks.push({text:text, completed:false});
+    taskInput.value='';
+    saveTasks();
+    renderTasks();
 }
 
-// Ticket 80mm
-function imprimirTicket(codigo, simbolo, hora, tipo, ingreso=true){
-    const ticketHTML = `
-        <div style="width:280px; padding:15px; text-align:center; font-family:monospace;">
-            <h1 style="font-size:28px; margin-bottom:10px;">🦐 PARQUEO CEVICHERÍA 🦐</h1>
-            <p style="font-size:26px; margin:5px;">${simbolo}</p>
-            <p style="font-size:26px; margin:5px;">Código: <strong>${codigo}</strong></p>
-            <p style="font-size:26px; margin:5px;">Hora: <strong>${hora}</strong></p>
-            ${!ingreso?`<p style="font-size:26px; margin:5px;">Tarifa: Q${tipo==='CARRO'?10:5}.00</p>`:''}
-            <p style="font-size:18px; margin-top:10px;">*POR FAVOR NO PIERDA ESTE DOCUMENTO*</p>
-        </div>
-    `;
-    const win = window.open('', '_blank', 'width=300,height=500');
-    win.document.write(ticketHTML);
-    win.document.close();
-    win.focus();
-    win.print();
-    win.close();
+function toggleComplete(idx){
+    tasks[idx].completed = !tasks[idx].completed;
+    saveTasks();
+    renderTasks();
 }
 
-function agregarVehiculo(tipo){
-    const codigo = generarCodigo();
-    const hora = new Date().toLocaleString();
-    const simbolo = tipo==='CARRO'?'🚗':'🏍️';
-    const veh = {codigo,hora,tipo,simbolo};
-    vehiculos.push(veh);
-    vehiculosCierre.push(veh);
-    guardarLocal(); guardarCierre();
-    actualizarLista();
-    imprimirTicket(codigo,simbolo,hora,tipo,true);
+function deleteTask(idx){
+    if(!confirm('¿Eliminar tarea?')) return;
+    tasks.splice(idx,1);
+    saveTasks();
+    renderTasks();
 }
 
-function salidaVehiculo(){
-    const code = parseInt(codigoSalida.value);
-    if(isNaN(code)) return alert('Ingrese un código válido');
-    const index = vehiculos.findIndex(v=>v.codigo===code);
-    if(index===-1) return alert('Código no encontrado');
-    const v = vehiculos.splice(index,1)[0];
-    guardarLocal();
-    actualizarLista();
-    imprimirTicket(v.codigo,v.simbolo,new Date().toLocaleString(),v.tipo,false);
-    codigoSalida.value=''; codigoSalida.focus();
-}
+addBtn.addEventListener('click', addTask);
+taskInput.addEventListener('keypress', e=>{
+    if(e.key==='Enter') addTask();
+});
 
-document.getElementById('btnCarro').addEventListener('click', ()=>agregarVehiculo('CARRO'));
-document.getElementById('btnMoto').addEventListener('click', ()=>agregarVehiculo('MOTO'));
-codigoSalida.addEventListener('keypress', e=>{ if(e.key==='Enter') salidaVehiculo(); });
-actualizarLista();
-
-// Cierre solo resumen
-function cierreResumenPDF(){
-    if(vehiculos.length>0){ alert('No se puede realizar el cierre: aún hay vehículos dentro.'); return; }
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(22);
-    doc.text("🦐 PARQUEO CEVICHERÍA 🦐",105,20,{align:'center'});
-    let totalCarros=0,totalMotos=0;
-    vehiculosCierre.forEach(v=>{ if(v.tipo==='CARRO') totalCarros++; else totalMotos++; });
-    doc.setFontSize(18);
-    doc.text(`Total Carros: ${totalCarros}`,10,40);
-    doc.text(`Total Motos: ${totalMotos}`,10,60);
-    doc.text(`Monto Total: Q${totalCarros*10 + totalMotos*5}.00`,10,80);
-    doc.save(`Cierre_${new Date().toLocaleDateString().replace(/\//g,'-')}.pdf`);
-    localStorage.removeItem('vehiculos'); localStorage.removeItem('vehiculosCierre');
-    vehiculos.length=0; vehiculosCierre.length=0; actualizarLista();
-}
-
-// Puedes asignar el cierre a un botón extra si quieres:
-// const btnCierre = document.createElement('button');
-// btnCierre.textContent='Cierre Día';
-// document.body.appendChild(btnCierre);
-// btnCierre.addEventListener('click',cierreResumenPDF);
+renderTasks();
 </script>
+
 </body>
 </html>
