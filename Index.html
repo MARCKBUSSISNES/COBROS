@@ -1,676 +1,594 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Sistema Offline - Las Piconas (Touch) - V6</title>
-<style>
-:root{
-  --bg:#0b0f14;--panel:#0f1720;--card:#0b1220;--accent:#ff6b35;--muted:#9aa4b2;--glass:rgba(255,255,255,0.03);
-  --green: #28a745;
-}
-*{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,#06080a 0%, #0b0f14 100%);color:#e6eef6;}
-.app{display:grid;grid-template-columns:360px 1fr 360px;gap:14px;padding:14px;height:100vh;}
-.sidebar{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
-.brand{font-weight:800;letter-spacing:0.6px;padding:8px 12px;font-size:18px;text-align:center;color:#fff;}
-.logo-preview{max-width:140px;margin:6px auto 8px;display:block;}
-.controls-row{display:flex;gap:8px;margin-bottom:8px;}
-.input, .qty{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:8px;color:#e6eef6;}
-.categorias{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
-.cat-item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.02);padding:6px;border-radius:8px;}
-.cat-btn{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;font-weight:700;min-width:80px;background:transparent;color:#fff;}
-.cat-actions{display:flex;gap:4px;}
-.products{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;overflow:auto;padding:6px;height:calc(100vh - 420px);}
-.prod-card{position:relative;padding:12px;border-radius:10px;cursor:pointer;text-align:center;user-select:none;color:#fff;border:1px solid rgba(255,255,255,0.04);}
-.prod-name{font-weight:800;}
-.prod-price{font-size:13px;color:var(--muted);margin-top:6px;}
-.prod-actions{position:absolute;top:6px;right:6px;display:flex;gap:4px;}
-.action-small{background:rgba(0,0,0,0.2);border:none;color:#fff;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:12px;}
-.center{background:var(--card);border-radius:12px;padding:12px;display:flex;flex-direction:column;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
-.viewer{flex:1;background:linear-gradient(180deg,#071428,#071a2a);padding:12px;border-radius:10px;overflow:auto;}
-.item-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px;border-bottom:1px dashed rgba(255,255,255,0.03);}
-.item-actions{display:flex;gap:6px;}
-.action-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff;padding:6px 8px;border-radius:8px;cursor:pointer;}
-.controls{display:flex;gap:8px;margin-top:10px;}
-.control-btn{flex:1;padding:12px;border-radius:8px;background:var(--accent);color:#0b1220;font-weight:800;border:none;cursor:pointer;}
-.small{padding:8px;font-size:14px;}
-.right{background:var(--panel);border-radius:12px;padding:12px;display:flex;flex-direction:column;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
-.summary{background:linear-gradient(180deg,#071428,#071a2a);border-radius:10px;padding:12px;margin-bottom:12px;}
-.kv{display:flex;justify-content:space-between;color:var(--muted);padding:6px 0;}
-.history{flex:1;overflow:auto;}
-.row{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);}
-.footer{font-size:12px;color:var(--muted);text-align:center;margin-top:8px;}
-.big-btn{background:linear-gradient(90deg,#111827,#0b1220);border:2px solid rgba(255,255,255,0.04);color:#fff;padding:12px;border-radius:10px;font-weight:800;}
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.current-order{font-size:20px;font-weight:900;text-align:center;}
-@media print{body *{visibility:hidden}.print-area, .print-area *{visibility:visible}.print-area{position:fixed;left:0;top:0;width:100%}}
-.login-wrap{position:fixed;inset:0;background:linear-gradient(90deg, rgba(2,6,23,0.9), rgba(4,10,27,0.95));display:flex;align-items:center;justify-content:center;z-index:999;}
-.login-card{background:linear-gradient(180deg,#071428,#0b1220);padding:28px;border-radius:12px;min-width:360px;box-shadow:0 8px 30px rgba(2,6,23,0.7);color:#fff;}
-.login-card h2{text-align:center;margin:6px 0 12px;}
-.login-card .input{width:100%;margin-bottom:10px;}
-.login-logo{max-width:140px;display:block;margin:0 auto 10px;}
-.pay-active{outline:2px solid rgba(255,255,255,0.08);box-shadow:0 4px 12px rgba(0,0,0,0.4) inset;}
-.comment-input{background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:6px;border-radius:6px;color:#e6eef6;font-size:13px;min-width:140px}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Control Administrativo de Parqueo — PICONAS</title>
 
-/* cobrar top but hidden until login */
-#btnCobrarTop { position:fixed; top:12px; left:50%; transform:translateX(-50%); z-index:1000; background:var(--green); color:#fff; border:none; padding:14px 28px; border-radius:12px; font-weight:900; font-size:18px; box-shadow:0 8px 20px rgba(0,0,0,0.35); cursor:pointer; display:none; }
+  <!-- Chart.js para gráficas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-/* change order button near totals */
-#btnChangeOrder { background:#0b1220;color:#fff;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;font-weight:800;cursor:pointer;margin-top:8px; }
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#0f1724; --accent:#06b6d4; --accent-2:#ff7a59; --card:#071021;
+      --muted:#9aa6b2; --glass: rgba(255,255,255,0.03); --radius:12px;
+      --success:#10b981; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:linear-gradient(180deg,#071021 0%, #081428 60%); color:#e6eef3}
+    .app{display:grid; grid-template-columns:260px 1fr; gap:18px; padding:20px; min-height:100vh;}
+    @media(max-width:900px){ .app{grid-template-columns:1fr} .sidebar{order:2} .main{order:1} }
 
-/* category/product color visual */
-.cat-btn.colored, .prod-card.colored { color: #fff; }
-</style>
+    /* SIDEBAR */
+    .sidebar{background:var(--panel); border-radius:var(--radius); padding:14px; box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+    .brand{display:flex; gap:12px; align-items:center; margin-bottom:8px}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(90deg,var(--accent),#0ea5ad);display:flex;align-items:center;justify-content:center;font-weight:700;color:#001;box-shadow:0 6px 18px rgba(6,182,212,0.12)}
+    .menu{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .menu button{background:transparent;border:none;color:var(--muted);text-align:left;padding:8px 10px;border-radius:8px;cursor:pointer}
+    .menu button.active{color:var(--accent);background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(255,122,89,0.03));font-weight:600}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08)); padding:12px; border-radius:10px}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* HEADER (within main) */
+    .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+    .actions{display:flex;gap:8px;align-items:center}
+    .btn{padding:8px 12px;border-radius:8px;border:none;background:transparent;color:inherit;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),#0ea5ad);color:#002026}
+    .btn.warn{background:linear-gradient(90deg,var(--accent-2),#ff936e);color:#2b0d00}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
+
+    /* FORM */
+    .form-row{display:flex;gap:8px;align-items:center}
+    .form-row input{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    .form-row .wide{flex:1}
+
+    /* TABLE */
+    .table-wrap{overflow:auto; margin-top:12px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,0.03); text-align:center}
+    th{color:var(--muted);font-weight:600;background:rgba(0,0,0,0.15)}
+    tr.active{background:linear-gradient(90deg, rgba(6,182,212,0.04), rgba(255,255,89,0.01))}
+
+    .summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+    .stat{background:var(--card);padding:12px;border-radius:10px;min-width:140px;text-align:center}
+    .stat h3{margin:0;font-size:18px}
+    .stat p{margin:6px 0 0;color:var(--muted)}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* small helpers */
+    .badge{padding:6px 10px;border-radius:999px;font-size:12px}
+    .badge.green{background:rgba(16,185,129,0.12);color:var(--success)}
+    .badge.yellow{background:rgba(250,204,21,0.12);color:#eab308}
+    .barcode{max-width:180px}
+  </style>
 </head>
 <body>
-
-<!-- COBRAR grande arriba (hidden until login) -->
-
-<!-- Menú hamburguesa (solo visible tras login) -->
-<button id="menuHamburguesa" title="Menú" style="display:none;position:fixed;top:12px;left:12px;z-index:1001;background:#111;border:none;color:white;font-size:26px;padding:6px 12px;border-radius:8px;cursor:pointer;">☰</button>
-<div id="menuLateral" style="position:fixed;top:0;left:-260px;width:240px;height:100%;background:#111827;color:white;z-index:1000;padding-top:60px;transition:left 0.3s;">
-  <a href="#" data-action="addCat" style="display:block;padding:10px 14px;color:white;text-decoration:none;">➕ Crear Categoría</a>
-  <a href="#" data-action="editCat" style="display:block;padding:10px 14px;color:white;text-decoration:none;">✏️ Modificar Categoría</a>
-  <a href="#" data-action="delCat" style="display:block;padding:10px 14px;color:white;text-decoration:none;">❌ Eliminar Categoría</a>
-  <a href="#" data-action="addProd" style="display:block;padding:10px 14px;color:white;text-decoration:none;">➕ Crear Producto</a>
-  <a href="#" data-action="editProd" style="display:block;padding:10px 14px;color:white;text-decoration:none;">✏️ Modificar Producto</a>
-  <a href="#" data-action="delProd" style="display:block;padding:10px 14px;color:white;text-decoration:none;">❌ Eliminar Producto</a>
-</div>
-
-<button id="btnCobrarTop" title="Cobrar">COBRAR 💵</button>
-
-<!-- LOGIN -->
-<div id="login" class="login-wrap">
-  <div class="login-card">
-    <img src="logo" class="login-logo" onerror="this.onerror=null;this.src='logo.png';" />
-    <h2>Ingreso al Sistema</h2>
-    <input id="user" class="input" placeholder="Usuario" value="" />
-    <input id="pass" class="input" placeholder="Clave" type="password" />
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button id="btnLogin" class="big-btn" style="flex:1">Entrar</button>
-    </div>
-    <div style="text-align:center;margin-top:10px;color:var(--muted);font-size:13px">
-      Usuario: <b>CAJERO</b> — Clave: <b>123</b>
-    </div>
-  </div>
-</div>
-
-<div class="app" id="appRoot" style="display:none;">
-  <div class="sidebar">
-    <div class="brand">Las Piconas - Punto de Venta (Touch)</div>
-    <img src="logo" alt="logo" class="logo-preview" onerror="this.onerror=null;this.src='logo.png';" />
-
-    <div style="margin-top:12px">
-      <button id="btnAddCategory" class="big-btn" style="margin-bottom:6px">+ Nueva Categoría</button>
-      <button id="btnAddProduct" class="big-btn">+ Nuevo Producto</button>
-    </div>
-
-    <div class="controls-row">
-      <input id="qty" class="qty" type="number" value="1" min="1" style="flex:1" />
-      <button id="btnDeleteLast" class="action-btn">Borrar último</button>
-    </div>
-
-    <div style="margin-top:6px">
-      <div style="font-size:13px;color:var(--muted);padding:6px">Categorías</div>
-      <div class="categorias" id="categorias"></div>
-    </div>
-
-    <div style="margin-top:12px">
-      <div style="font-size:13px;color:var(--muted);padding:6px">Productos</div>
-      <div class="products" id="products"></div>
-    </div>
-  </div>
-
-  <div class="center" style="padding-top:68px;">
-    <div class="topbar">
-      <div style="font-weight:800;font-size:18px">Visor de Cliente</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="btn-cash" class="action-btn">Efectivo</button>
-        <button id="btn-card" class="action-btn">Tarjeta</button>
-        <input id="generalComment" placeholder="Comentario general (opcional)" class="input" style="width:260px;margin-left:8px" />
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">P</div>
+        <div>
+          <div style="font-weight:700">PICONAS - Parqueo</div>
+          <div class="small">Administración</div>
+        </div>
       </div>
-    </div>
-    <div class="current-order" id="currentOrder">Orden: A 1</div>
-    <div class="viewer" id="viewer"></div>
-    <div class="controls">
-      <button id="minus" class="action-btn small">-</button>
-      <button id="plus" class="action-btn small">+</button>
-      <button id="coupon" class="action-btn small">Descuento Q</button>
-      <button id="finalizar" class="control-btn">Cobrar & Generar Tickets</button>
-    </div>
+
+      <div class="menu" id="menu">
+        <button data-view="dashboard" class="active">📊 Dashboard</button>
+        <button data-view="registro">🚗 Registro</button>
+        <button data-view="export">⬇️ Exportar/Importar</button>
+        <button data-view="config">⚙️ Configuración</button>
+      </div>
+
+      <div style="margin-top:12px" class="small">
+        Admin console • Datos guardados en el navegador (LocalStorage)
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h2 style="margin:0">Control Administrativo de Parqueo</h2>
+          <div class="small">Panel central — Mantiene tarifas y lógica original</div>
+        </div>
+        <div class="actions">
+          <input id="search" placeholder="Buscar por placa o marca..." class="btn ghost" style="padding:8px 12px" />
+          <button class="btn" id="btnClearAll" title="Limpiar todo (borrar datos)">Limpiar datos</button>
+          <button class="btn primary" id="btnExportCSV">Exportar CSV</button>
+          <button class="btn" id="btnPrintSummary">Imprimir resumen</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD VIEW -->
+      <section id="view-dashboard" class="card view">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="card">
+              <h3 style="margin:0">Registrar ingreso rápido</h3>
+              <div style="height:10px"></div>
+              <div class="form-row">
+                <input id="placa" class="wide" placeholder="Placa del vehículo" autofocus />
+                <input id="marca" placeholder="Marca" style="width:180px" />
+                <button class="btn primary" id="btnIngresar">Ingresar</button>
+                <button class="btn warn" id="btnGym">GYM (Q0)</button>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+              <h3 style="margin:0">Registros</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>Placa</th><th>Marca</th><th>Ingreso</th><th>Salida</th><th>Total Q</th><th>Acciones</th></tr>
+                  </thead>
+                  <tbody id="registro"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <aside style="width:360px">
+            <div class="card">
+              <h3 style="margin:0">Resumen del Turno</h3>
+              <div class="summary" id="resumenStats">
+                <div class="stat"><h3 id="statActivos">0</h3><p>Vehículos activos</p></div>
+                <div class="stat"><h3 id="statTotal">Q0.00</h3><p>Total recaudado</p></div>
+                <div class="stat"><h3 id="statEntradas">0</h3><p>Entradas hoy</p></div>
+              </div>
+              <div style="height:12px"></div>
+              <canvas id="chart" height="200"></canvas>
+            </div>
+
+            <div class="card" style="margin-top:12px">
+              <h4 style="margin:0">Detalle Rápido</h4>
+              <div style="height:8px"></div>
+              <div class="small">Selecciona un registro para ver más y generar ticket o factura</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- REGISTRO VIEW -->
+      <section id="view-registro" class="card view" style="display:none; margin-top:12px">
+        <h3>Historial completo</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Placa</th><th>Marca</th><th>Ingreso</th><th>Salida</th><th>Minutos</th><th>Total Q</th><th>Acciones</th></tr></thead>
+            <tbody id="historial"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- EXPORT / IMPORT -->
+      <section id="view-export" class="card view" style="display:none; margin-top:12px">
+        <h3>Exportar / Importar datos</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn primary" id="exportJSON">Exportar JSON</button>
+          <button class="btn" id="importJSONBtn">Importar JSON</button>
+          <input type="file" id="fileImport" accept="application/json" style="display:none" />
+        </div>
+        <div style="margin-top:12px" id="importResult"></div>
+      </section>
+
+      <!-- CONFIG -->
+      <section id="view-config" class="card view" style="display:none; margin-top:12px">
+        <h3>Configuración</h3>
+        <p class="small">Sin login (modo administrativo local). Aquí puedes ajustar datos si lo deseas en próximas versiones.</p>
+        <div style="margin-top:8px">
+          <button class="btn" id="btnResetTarifas">Restaurar tarifas originales</button>
+        </div>
+      </section>
+
+      <footer class="small">&copy; MarckBusiness 2025 — Sistema administrativo</footer>
+    </main>
   </div>
 
-  <div class="right">
-    <div class="summary">
-      <div class="kv"><div>Subtotal</div><div id="subtotal">Q0.00</div></div>
-      <div class="kv"><div>Descuento</div><div id="discount">Q0.00</div></div>
-      <div class="kv" style="font-weight:800;margin-top:8px"><div>Total</div><div id="total">Q0.00</div></div>
-      <button id="btnChangeOrder">Cambiar número de orden</button>
-    </div>
+  <script>
+    // -----------------------------
+    // Administración avanzada (sin login)
+    // -----------------------------
+    const STORAGE_KEY = 'parqueo_admin_v2';
+    let registros = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 
-    <div style="margin-bottom:8px">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Historial / Reimprimir</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input id="searchId" class="input" placeholder="Buscar por id u orden..." />
-        <button id="btnSearch" class="action-btn">Buscar</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <button id="btnCloseShift" class="big-btn" style="flex:1;background:linear-gradient(90deg,#7c3aed,#6d28d9)">Cierre de Turno</button>
-        <button id="btnExport" class="action-btn">Exportar</button>
-      </div>
-      <div class="history" id="history"></div>
-    </div>
-    <div class="footer">Powered by Marck Business - Tecnología para tu negocio</div>
-  </div>
-</div>
+    // Mantener exactamente las mismas tarifas originales:
+    const tarifas = [
+      { min: 0, max: 5, precio: 0 },
+      { min: 6, max: 35, precio: 5 },
+      { min: 36, max: 65, precio: 8 },
+      { min: 66, max: 95, precio: 13 },
+      { min: 96, max: 125, precio: 16 },
+      { min: 126, max: 155, precio: 21 },
+      { min: 156, max: 185, precio: 24 },
+      { min: 186, max: 215, precio: 29 },
+      { min: 216, max: 245, precio: 32 },
+      { min: 246, max: 275, precio: 37 },
+      { min: 276, max: 305, precio: 40 },
+      { min: 306, max: 335, precio: 45 },
+      { min: 336, max: 365, precio: 48 },
+      { min: 366, max: 395, precio: 53 },
+      { min: 396, max: 425, precio: 56 },
+      { min: 426, max: 455, precio: 61 },
+      { min: 456, max: 485, precio: 64 },
+      { min: 486, max: 515, precio: 69 },
+      { min: 516, max: 545, precio: 72 },
+      { min: 546, max: 575, precio: 77 },
+      { min: 576, max: 605, precio: 80 },
+      { min: 606, max: 635, precio: 85 },
+      { min: 636, max: 665, precio: 88 }
+    ];
 
-<script>
-// ================= INITIAL DATA & BACKWARDS COMPATIBILITY =================
-let rawCategories = localStorage.getItem('categories_v3');
-let CATEGORIES;
-if(rawCategories){
-  try{
-    CATEGORIES = JSON.parse(rawCategories);
-    // if the structure is legacy (cat: [products]), convert to { color: '#...?', products: [...] }
-    Object.keys(CATEGORIES).forEach(cat=>{
-      if(Array.isArray(CATEGORIES[cat])){
-        CATEGORIES[cat] = { color: '#2a2f36', products: CATEGORIES[cat] };
-      } else if(CATEGORIES[cat] && CATEGORIES[cat].products && Array.isArray(CATEGORIES[cat].products)){
-        // ok
-      } else {
-        // fallback
-        CATEGORIES[cat] = { color: '#2a2f36', products: []};
+    // ---------- UTILIDADES ----------
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(registros));
+    }
+
+    function uid(prefix='id') { return prefix + '_' + Math.random().toString(36).slice(2,9); }
+
+    // ---------- CÁLCULO (misma lógica y tarifas) ----------
+    function calcularPago(horaIngreso, horaSalida) {
+      const entrada = new Date(horaIngreso);
+      const salida = new Date(horaSalida);
+      const minutos = Math.ceil((salida - entrada) / 60000);
+
+      for (let i = 0; i < tarifas.length; i++) {
+        if (minutos >= tarifas[i].min && minutos <= tarifas[i].max) {
+          return tarifas[i].precio;
+        }
+      }
+      return tarifas[tarifas.length - 1].precio;
+    }
+
+    // ---------- RENDER TABLA PRINCIPAL ----------
+    function actualizarTabla() {
+      const tbody = document.getElementById('registro');
+      tbody.innerHTML = '';
+      registros.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        if (!r.horaSalida) tr.classList.add('active');
+        tr.innerHTML = `
+          <td>${r.placa}</td>
+          <td>${r.marca}</td>
+          <td>${new Date(r.horaIngreso).toLocaleString()}</td>
+          <td>${r.horaSalida ? new Date(r.horaSalida).toLocaleString() : '-'}</td>
+          <td>${r.total != null ? 'Q' + Number(r.total).toFixed(2) : '-'}</td>
+          <td>
+            ${r.horaSalida ? '' : `<button class="btn" data-idx="${idx}" data-action="salir">Salir</button>
+            <button class="btn ghost" data-idx="${idx}" data-action="gym">GYM</button>`}
+            <button class="btn ghost" data-idx="${idx}" data-action="ticket">Ticket</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      actualizarResumen();
+      renderHistorial();
+      save();
+    }
+
+    // ---------- ACCIONES ----------
+    document.getElementById('btnIngresar').addEventListener('click', () => {
+      const placaEl = document.getElementById('placa');
+      const marcaEl = document.getElementById('marca');
+      const placa = (placaEl.value || '').trim();
+      const marca = (marcaEl.value || '').trim();
+      if (!placa || !marca) return alert('Ingrese placa y marca');
+      const hora = new Date().toISOString();
+      registros.push({ id: uid('r'), placa, marca, horaIngreso: hora, horaSalida: null, total: null });
+      placaEl.value = ''; marcaEl.value = '';
+      placaEl.focus();
+      imprimirTicket(placa, marca, hora);
+      actualizarTabla();
+    });
+
+    // GYM botón: cobrar Q0 y marcar salida
+    document.getElementById('btnGym').addEventListener('click', () => {
+      const placaEl = document.getElementById('placa');
+      const marcaEl = document.getElementById('marca');
+      const placa = (placaEl.value || '').trim();
+      const marca = (marcaEl.value || '').trim();
+      if (!placa || !marca) return alert('Ingrese placa y marca');
+      const hora = new Date().toISOString();
+      const rec = { id: uid('r'), placa, marca, horaIngreso: hora, horaSalida: new Date().toISOString(), total: 0 };
+      registros.push(rec);
+      placaEl.value = ''; marcaEl.value = '';
+      imprimirFacturaGYM(rec);
+      actualizarTabla();
+    });
+
+    // Delegación de eventos en la tabla
+    document.getElementById('registro').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const idx = Number(btn.dataset.idx);
+      const action = btn.dataset.action;
+      if (action === 'salir') sacarVehiculo(idx);
+      if (action === 'gym') marcarGYM(idx);
+      if (action === 'ticket') imprimirTicketFromIndex(idx);
+    });
+
+    // sacarVehiculo (salida normal)
+    function sacarVehiculo(index) {
+      const salida = new Date().toISOString();
+      registros[index].horaSalida = salida;
+      registros[index].total = calcularPago(registros[index].horaIngreso, salida);
+      imprimirFactura(registros[index]);
+      actualizarTabla();
+    }
+
+    // marcar GYM desde tabla (0.00)
+    function marcarGYM(index) {
+      const salida = new Date().toISOString();
+      registros[index].horaSalida = salida;
+      registros[index].total = 0;
+      imprimirFacturaGYM(registros[index]);
+      actualizarTabla();
+    }
+
+    function imprimirTicketFromIndex(index) {
+      const r = registros[index];
+      imprimirTicket(r.placa, r.marca, r.horaIngreso);
+    }
+
+    // ---------- IMPRESIÓN (tickets y facturas) ----------
+    function imprimirHTMLWindow(contentHtml, options = {}) {
+      const w = window.open('', '_blank', 'width=380,height=640');
+      w.document.write(contentHtml);
+      w.document.close();
+      if (!options.noPrint) setTimeout(() => w.print(), 400);
+    }
+
+    function imprimirTicket(placa, marca, hora) {
+      const fecha = new Date(hora);
+      const fechaStr = fecha.toLocaleDateString();
+      const horaStr = fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const barcodeURL = `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(placa)}&code=Code128&translate-esc=false`;
+
+      const html = `
+      <html><head><meta charset="utf-8"><title>Ticket</title>
+      <style>
+        body{font-family:monospace;text-align:center;padding:10px}
+        .line{border-top:1px dashed #000;margin:10px 0}
+        .big{font-size:18pt;font-weight:700}
+        img{max-width:100%;height:auto}
+      </style></head><body>
+        <img src="IMAGEN1.jpg" alt="logo" style="max-width:200px"/>
+        <div class="line"></div>
+        <div>FECHA</div><div>${fechaStr}</div>
+        <div class="line"></div>
+        <div>HORA DE INGRESO</div><div class="big">${horaStr}</div>
+        <div class="line"></div>
+        <div>PLACA</div><div class="big">${placa}</div>
+        <div class="line"></div>
+        <div>MARCA</div><div class="big">${marca}</div>
+        <div class="line"></div>
+        <div><img src="${barcodeURL}" class="barcode" /></div>
+        <div class="line"></div>
+        <pre>Gracias por su visita\n*RECUERDE NO PERDER SU TICKET*</pre>
+      </body></html>`;
+      imprimirHTMLWindow(html);
+    }
+
+    function imprimirFactura(dato) {
+      const entrada = new Date(dato.horaIngreso);
+      const salida = new Date(dato.horaSalida);
+      const tiempo = Math.ceil((salida - entrada) / 60000);
+      const barcodeURL = `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(dato.placa)}&code=Code128&translate-esc=false`;
+      const html = `
+      <html><head><meta charset="utf-8"><title>Factura</title>
+      <style>
+        body{font-family:monospace;text-align:center;padding:10px}
+        .line{border-top:1px dashed #000;margin:10px 0}
+        .big{font-size:18pt;font-weight:700}
+      </style></head><body>
+        <img src="IMAGEN1.jpg" alt="logo" style="max-width:200px"/>
+        <div class="line"></div>
+        <div>FACTURA VEHÍCULO</div>
+        <div class="line"></div>
+        <div>PLACA</div><div class="big">${dato.placa}</div>
+        <div class="line"></div>
+        <div>MARCA</div><div class="big">${dato.marca}</div>
+        <div class="line"></div>
+        <div>ENTRADA</div><div>${entrada.toLocaleString()}</div>
+        <div class="line"></div>
+        <div>SALIDA</div><div>${salida.toLocaleString()}</div>
+        <div class="line"></div>
+        <div>TIEMPO TOTAL</div><div class="big">${tiempo} minutos</div>
+        <div class="line"></div>
+        <div>TOTAL A PAGAR</div><div class="big">Q${Number(dato.total).toFixed(2)}</div>
+        <div class="line"></div>
+        <div><img src="${barcodeURL}" class="barcode" /></div>
+        <div class="line"></div>
+        <pre>Gracias por su visita</pre>
+      </body></html>`;
+      imprimirHTMLWindow(html);
+    }
+
+    function imprimirFacturaGYM(dato) {
+      const entrada = new Date(dato.horaIngreso);
+      const salida = new Date(dato.horaSalida);
+      const tiempo = Math.ceil((salida - entrada) / 60000);
+      const barcodeURL = `https://barcode.tec-it.com/barcode.ashx?data=${encodeURIComponent(dato.placa)}&code=Code128&translate-esc=false`;
+      const html = `
+      <html><head><meta charset="utf-8"><title>Factura GYM</title>
+      <style>
+        body{font-family:monospace;text-align:center;padding:10px}
+        .line{border-top:1px dashed #000;margin:10px 0}
+        .big{font-size:18pt;font-weight:700;color:#388e3c}
+      </style></head><body>
+        <img src="IMAGEN1.jpg" alt="logo" style="max-width:200px"/>
+        <div class="line"></div>
+        <div>FACTURA VEHÍCULO GYM 💪</div>
+        <div class="line"></div>
+        <div>PLACA</div><div class="big">${dato.placa}</div>
+        <div class="line"></div>
+        <div>MARCA</div><div class="big">${dato.marca}</div>
+        <div class="line"></div>
+        <div>ENTRADA</div><div>${entrada.toLocaleString()}</div>
+        <div class="line"></div>
+        <div>SALIDA</div><div>${salida.toLocaleString()}</div>
+        <div class="line"></div>
+        <div>TIEMPO TOTAL</div><div class="big">${tiempo} minutos</div>
+        <div class="line"></div>
+        <div>TOTAL A PAGAR</div><div class="big">Q0.00</div>
+        <div class="line"></div>
+        <div><img src="${barcodeURL}" class="barcode" /></div>
+        <div class="line"></div>
+        <pre>Gracias por su visita\nPARQUEO PARA GYM</pre>
+      </body></html>`;
+      imprimirHTMLWindow(html);
+    }
+
+    // ---------- RESUMEN Y GRÁFICO ----------
+    function actualizarResumen() {
+      const activos = registros.filter(r => !r.horaSalida).length;
+      const total = registros.reduce((s, r) => s + (r.total || 0), 0);
+      const hoy = registros.filter(r => new Date(r.horaIngreso).toDateString() === new Date().toDateString()).length;
+      document.getElementById('statActivos').innerText = activos;
+      document.getElementById('statTotal').innerText = 'Q' + total.toFixed(2);
+      document.getElementById('statEntradas').innerText = hoy;
+      renderChart();
+    }
+
+    let chartInstance = null;
+    function renderChart() {
+      const ctx = document.getElementById('chart').getContext('2d');
+      // agrupar por hora del día (ejemplo resumen)
+      const buckets = {};
+      registros.forEach(r => {
+        const h = new Date(r.horaIngreso).getHours();
+        buckets[h] = (buckets[h] || 0) + 1;
+      });
+      const labels = Array.from({length:24}, (_,i) => String(i).padStart(2,'0') + ':00');
+      const data = labels.map(l => buckets[Number(l.slice(0,2))] || 0);
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Entradas por hora', data, backgroundColor: 'rgba(6,182,212,0.85)' }] },
+        options: { responsive:true, plugins:{legend:{display:false}} }
+      });
+    }
+
+    // ---------- HISTORIAL DETALLADO ----------
+    function renderHistorial() {
+      const tbody = document.getElementById('historial');
+      tbody.innerHTML = '';
+      registros.forEach((r, i) => {
+        const minutos = r.horaSalida ? Math.ceil((new Date(r.horaSalida) - new Date(r.horaIngreso))/60000) : '-';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td>${r.placa}</td>
+          <td>${r.marca}</td>
+          <td>${new Date(r.horaIngreso).toLocaleString()}</td>
+          <td>${r.horaSalida ? new Date(r.horaSalida).toLocaleString() : '-'}</td>
+          <td>${minutos}</td>
+          <td>${r.total != null ? 'Q' + Number(r.total).toFixed(2) : '-'}</td>
+          <td><button class="btn" data-idx="${i}" data-action="view">Ver</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ---------- EXPORT / IMPORT ----------
+    document.getElementById('exportJSON').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(registros, null, 2)], { type:'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'parqueo_backup_'+(new Date()).toISOString().slice(0,10)+'.json'; a.click();
+    });
+    document.getElementById('importJSONBtn').addEventListener('click', () => document.getElementById('fileImport').click());
+    document.getElementById('fileImport').addEventListener('change', (e) => {
+      const f = e.target.files[0]; if(!f) return;
+      const r = new FileReader(); r.onload = () => {
+        try {
+          const data = JSON.parse(r.result);
+          if (!Array.isArray(data)) return alert('Archivo inválido');
+          // preguntar si reemplazar o fusionar
+          if (confirm('¿Reemplazar registros actuales con este backup? (Aceptar = reemplazar)')) {
+            registros = data;
+          } else {
+            registros = registros.concat(data);
+          }
+          save(); actualizarTabla(); alert('Importación completada');
+        } catch (err) { alert('Error al leer archivo'); }
+      };
+      r.readAsText(f);
+    });
+
+    document.getElementById('exportJSON')?.addEventListener('click', () => { /* ya manejado arriba */ });
+
+    // Export CSV (simple)
+    document.getElementById('btnExportCSV').addEventListener('click', () => {
+      const rows = [['placa','marca','horaIngreso','horaSalida','total']];
+      registros.forEach(r => rows.push([r.placa, r.marca, r.horaIngreso, r.horaSalida || '', r.total || 0]));
+      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type:'text/csv' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'parqueo_'+(new Date()).toISOString().slice(0,10)+'.csv'; a.click();
+    });
+
+    // ---------- LIMPIEZA / CIERRE TURNO ----------
+    document.getElementById('btnClearAll').addEventListener('click', () => {
+      if (!confirm('Borrar todos los registros actuales?')) return;
+      registros = []; save(); actualizarTabla();
+    });
+
+    document.getElementById('btnPrintSummary').addEventListener('click', () => {
+      const total = registros.reduce((s, r) => s + (r.total || 0), 0);
+      const html = `<html><body style="font-family:monospace;text-align:center"><h2>CIERRE DE TURNO</h2><pre>TOTAL: Q${total.toFixed(2)}</pre></body></html>`;
+      const w = window.open('','_blank'); w.document.write(html); w.document.close(); w.print();
+    });
+
+    // ---------- BÚSQUEDA Y FILTROS ----------
+    document.getElementById('search').addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      const tbody = document.getElementById('registro');
+      Array.from(tbody.children).forEach(tr => {
+        const placa = tr.children[0]?.innerText.toLowerCase() || '';
+        const marca = tr.children[1]?.innerText.toLowerCase() || '';
+        tr.style.display = (placa.includes(q) || marca.includes(q)) ? '' : 'none';
+      });
+    });
+
+    // ---------- NAV VIEWS ----------
+    document.getElementById('menu').addEventListener('click', (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      document.querySelectorAll('#menu button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const view = b.dataset.view;
+      document.querySelectorAll('.view').forEach(v => v.style.display = (v.id === 'view-' + view) ? '' : 'none');
+    });
+
+    // ---------- INICIALIZAR Y LIGAR EVENTOS ----------
+    function init() {
+      actualizarTabla();
+      // botones por defecto: mostrar dashboard
+      document.querySelector('#menu button[data-view="dashboard"]').click();
+    }
+    init();
+
+    // Restaurar tarifas originales (no cambia nada si ya están)
+    document.getElementById('btnResetTarifas').addEventListener('click', () => {
+      if (confirm('¿Restaurar tarifas originales (no modifica registros) ?')) {
+        alert('Las tarifas originales se mantienen por defecto.');
       }
     });
-  }catch(e){
-    // corrupt -> set default
-    CATEGORIES = {
-      'MEDIANAS': { color:'#0f4bff', products:[{name:'MED. POLLO', price:35},{name:'MED. PASTOR', price:35}]},
-      'JUMBOS': { color:'#16a34a', products:[{name:'JUMB. POLLO', price:55}]}
-    };
-  }
-} else {
-  CATEGORIES = {
-    'MEDIANAS': { color:'#0f4bff', products:[{name:'MED. POLLO', price:35},{name:'MED. PASTOR', price:35},{name:'MED. MIXTA', price:35}]},
-    'JUMBOS': { color:'#16a34a', products:[{name:'JUMB. POLLO', price:55},{name:'JUMB. PASTOR', price:55}]},
-    'TACOS': { color:'#7c3aed', products:[{name:'TACOS POLLO', price:35},{name:'TACOS PASTOR', price:35}]},
-    'BEBIDAS': { color:'#f97316', products:[{name:'AGUA PURA', price:10},{name:'COCA COLA', price:15}]},
-    'POSTRES_Y_EXTRAS': { color:'#ef4444', products:[{name:'CINAMON ROLL', price:20},{name:'ARROZ EN LECHE', price:20}]}
-  };
-}
 
-let cart = JSON.parse(localStorage.getItem('current_cart_working')||'[]') || [];
-let discount = 0;
-let paymentMethod = 'EFECTIVO';
-let orderCounter = Number(localStorage.getItem('order_counter') || 1);
+    // manejadores adicionales para historial (ver detalle)
+    document.getElementById('historial').addEventListener('click', (e) => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      const idx = Number(btn.dataset.idx); const action = btn.dataset.action;
+      if (action === 'view') {
+        const r = registros[idx];
+        alert(`Placa: ${r.placa}\nMarca: ${r.marca}\nIngreso: ${new Date(r.horaIngreso).toLocaleString()}\nSalida: ${r.horaSalida ? new Date(r.horaSalida).toLocaleString() : '-'}\nTotal: ${r.total != null ? 'Q'+Number(r.total).toFixed(2) : '-'}`);
+      }
+    });
 
-// =============== HELPERS =================
-function persistCategories(){ localStorage.setItem('categories_v3', JSON.stringify(CATEGORIES)); broadcastState('categories_v3', JSON.stringify(CATEGORIES)); }
-function persistWorkingCart(){ localStorage.setItem('current_cart_working', JSON.stringify(cart)); broadcastState('current_cart_working', JSON.stringify(cart)); }
-function fmt(v){ return 'Q'+(Number(v)||0).toFixed(2); }
-function escapeHtml(s){ if(!s && s!==0) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function pad(n){ return n<10 ? '0'+n : n; }
-function formatDateTime(d){ return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
-function broadcastState(key,value){ try{ localStorage.setItem(key,value); }catch(e){} }
+    // soporte para imprimir ticket desde inputs con Enter
+    document.getElementById('placa').addEventListener('keyup', (e) => { if (e.key === 'Enter') document.getElementById('marca').focus(); });
+    document.getElementById('marca').addEventListener('keyup', (e) => { if (e.key === 'Enter') document.getElementById('btnIngresar').click(); });
 
-// =============== UI RENDER =================
-function updateCurrentOrderUI(){ document.getElementById('currentOrder').textContent = 'Orden: A ' + orderCounter; }
-function recalc(){ const subtotal = cart.reduce((s,i)=>s + i.price*i.qty,0); const total = Math.max(0, subtotal - discount); document.getElementById('subtotal').textContent = fmt(subtotal); document.getElementById('discount').textContent = fmt(discount); document.getElementById('total').textContent = fmt(total); }
-
-function renderCategories(){
-  const el = document.getElementById('categorias'); el.innerHTML='';
-  Object.keys(CATEGORIES).forEach(cat=>{
-    const meta = CATEGORIES[cat];
-    const div = document.createElement('div'); div.className='cat-item';
-    const b = document.createElement('button'); b.className='cat-btn'; b.textContent = cat;
-    if(meta && meta.color){ b.style.background = meta.color; b.classList.add('colored'); }
-    b.onclick = ()=> showProducts(cat);
-    const actions = document.createElement('div'); actions.className='cat-actions';
-    const editBtn = document.createElement('button'); editBtn.className='action-small'; editBtn.textContent='✏️'; editBtn.title='Editar';
-    editBtn.onclick = (e)=>{ e.stopPropagation(); editCategory(cat); };
-    const delBtn = document.createElement('button'); delBtn.className='action-small'; delBtn.textContent='🗑️'; delBtn.title='Eliminar';
-    delBtn.onclick = (e)=>{ e.stopPropagation(); deleteCategory(cat); };
-    actions.appendChild(editBtn); actions.appendChild(delBtn);
-    div.appendChild(b); div.appendChild(actions);
-    el.appendChild(div);
-  });
-}
-
-function showProducts(cat){
-  const el = document.getElementById('products'); el.innerHTML='';
-  const meta = CATEGORIES[cat];
-  if(!meta || !Array.isArray(meta.products)) return;
-  meta.products.forEach((p, idx)=>{
-    const card = document.createElement('div'); card.className='prod-card';
-    card.onclick = ()=> addProductWithCommentPrompt(p);
-    if(meta.color){ card.style.background = meta.color; card.classList.add('colored'); }
-    card.innerHTML = `<div class='prod-name'>${p.name}</div><div class='prod-price'>${fmt(p.price)}</div>`;
-    const actions = document.createElement('div'); actions.className='prod-actions';
-    const editBtn = document.createElement('button'); editBtn.className='action-small'; editBtn.textContent='✏️'; editBtn.title='Editar';
-    editBtn.onclick = (e)=>{ e.stopPropagation(); editProduct(cat, idx); };
-    const delBtn = document.createElement('button'); delBtn.className='action-small'; delBtn.textContent='🗑️'; delBtn.title='Eliminar';
-    delBtn.onclick = (e)=>{ e.stopPropagation(); deleteProduct(cat, idx); };
-    actions.appendChild(editBtn); actions.appendChild(delBtn);
-    card.appendChild(actions);
-    el.appendChild(card);
-  });
-}
-
-function renderViewer(){
-  updateCurrentOrderUI();
-  const v = document.getElementById('viewer'); v.innerHTML='';
-  cart.forEach((it,i)=>{
-    const row = document.createElement('div'); row.className='item-row';
-    const left = document.createElement('div'); left.style.flex='1';
-    left.innerHTML = `<div style="font-weight:800">${it.qty} x ${escapeHtml(it.name)}</div>`;
-    const commentInput = document.createElement('input');
-    commentInput.className = 'comment-input';
-    commentInput.placeholder = 'Comentario (ej. sin cebolla)';
-    commentInput.value = it.comment || '';
-    commentInput.addEventListener('input', (e)=>{ cart[i].comment = e.target.value; persistWorkingCart(); broadcastState('current_cart_working', JSON.stringify(cart)); });
-    left.appendChild(commentInput);
-    const right = document.createElement('div'); right.style.width='160px'; right.style.textAlign='right';
-    right.innerHTML = `${fmt(it.price*it.qty)}<div style="margin-top:6px;display:flex;gap:6px;justify-content:flex-end"><button class="action-btn" data-idx="${i}" data-act="minus">-</button><button class="action-btn" data-idx="${i}" data-act="plus">+</button><button class="action-btn" style="background:#e74c3c" data-idx="${i}" data-act="del">X</button></div>`;
-    row.appendChild(left); row.appendChild(right); v.appendChild(row);
-  });
-  Array.from(document.querySelectorAll('button[data-act]')).forEach(btn=>{
-    btn.onclick = ()=> {
-      const idx = Number(btn.getAttribute('data-idx'));
-      const act = btn.getAttribute('data-act');
-      if(act === 'minus'){ if(cart[idx].qty>1) cart[idx].qty--; else cart.splice(idx,1); }
-      else if(act === 'plus'){ cart[idx].qty++; }
-      else if(act === 'del'){ cart.splice(idx,1); }
-      persistWorkingCart(); broadcastState('current_cart_working', JSON.stringify(cart)); renderViewer();
-    };
-  });
-  recalc();
-}
-
-// ============== CRUD for categories & products with color support ==============
-function addCategory(){
-  const name = prompt('Nombre de la nueva categoría:');
-  if(!name) return;
-  if(CATEGORIES[name]){ alert('Categoría ya existe'); return; }
-  const color = prompt('Color (HEX) para la categoría (ej: #ff6b35):', '#2a2f36') || '#2a2f36';
-  CATEGORIES[name] = { color: color, products: [] };
-  persistCategories(); renderCategories();
-}
-function editCategory(oldName){
-  const meta = CATEGORIES[oldName];
-  const newName = prompt('Nuevo nombre para la categoría:', oldName);
-  if(!newName) return;
-  const color = prompt('Nuevo color (HEX):', meta.color || '#2a2f36') || (meta.color || '#2a2f36');
-  if(newName !== oldName){
-    if(CATEGORIES[newName]){ alert('Ya existe categoría con ese nombre'); return; }
-    CATEGORIES[newName] = { color, products: meta.products };
-    delete CATEGORIES[oldName];
-  } else {
-    CATEGORIES[oldName].color = color;
-  }
-  persistCategories(); renderCategories(); showProducts(newName);
-}
-function deleteCategory(cat){
-  if(!confirm(`Eliminar la categoría "${cat}" y todos sus productos?`)) return;
-  delete CATEGORIES[cat];
-  persistCategories(); renderCategories(); document.getElementById('products').innerHTML='';
-  broadcastState('categories_v3', JSON.stringify(CATEGORIES));
-}
-
-function addProduct(){
-  const cat = prompt('Categoría del producto:');
-  if(!cat) return alert('Ingrese categoría');
-  if(!CATEGORIES[cat]) return alert('Categoría no existe');
-  const name = prompt('Nombre del producto:');
-  if(!name) return alert('Ingrese nombre');
-  const price = parseFloat(prompt('Precio del producto:'));
-  if(isNaN(price)) return alert('Precio inválido');
-  const color = prompt('Color (HEX) específico del producto (opcional):', CATEGORIES[cat].color || '#2a2f36') || CATEGORIES[cat].color || '#2a2f36';
-  CATEGORIES[cat].products.push({ name, price, color });
-  persistCategories(); showProducts(cat); broadcastState('categories_v3', JSON.stringify(CATEGORIES));
-}
-function editProduct(cat, idx){
-  const prod = CATEGORIES[cat].products[idx];
-  const newName = prompt('Nuevo nombre del producto:', prod.name);
-  if(!newName) return;
-  const newPrice = parseFloat(prompt('Nuevo precio:', prod.price));
-  if(isNaN(newPrice)) return alert('Precio inválido');
-  const newColor = prompt('Nuevo color (HEX) del producto:', prod.color || CATEGORIES[cat].color || '#2a2f36') || prod.color || CATEGORIES[cat].color || '#2a2f36';
-  CATEGORIES[cat].products[idx] = { name: newName, price: newPrice, color: newColor };
-  persistCategories(); showProducts(cat); broadcastState('categories_v3', JSON.stringify(CATEGORIES));
-}
-function deleteProduct(cat, idx){
-  if(!confirm('Eliminar producto?')) return;
-  CATEGORIES[cat].products.splice(idx,1);
-  persistCategories(); showProducts(cat); broadcastState('categories_v3', JSON.stringify(CATEGORIES));
-}
-
-// ============== CART operations ==============
-function addProductWithCommentPrompt(p){
-  const qty = Number(document.getElementById('qty').value) || 1;
-  const comment = ''; 
-  const existing = cart.find(c => c.name === p.name && (c.comment || '') === comment && c.price === p.price);
-  if(existing) existing.qty += qty;
-  else cart.push({ name: p.name, price: p.price, qty, comment });
-  persistWorkingCart(); renderViewer(); broadcastState('current_cart_working', JSON.stringify(cart));
-}
-
-// ============== Payment & print logic (combined, page-break between tickets) ==============
-function buildSaleObject(){
-  const idCompact = 'A'+orderCounter;
-  const idLabel = 'A ' + orderCounter;
-  const dateObj = new Date();
-  const dateStr = formatDateTime(dateObj);
-  const subtotal = cart.reduce((s,i)=>s+i.qty*i.price,0);
-  const total = Math.max(0, subtotal - discount);
-  const generalComment = (document.getElementById('generalComment')||{value:''}).value || '';
-  return {
-    id: idCompact,
-    label: idLabel,
-    date: dateObj.toISOString(),
-    dateFormatted: dateStr,
-    items: cart.map(i=>({ name:i.name, qty:i.qty, price:i.price, comment:i.comment||''})),
-    subtotal, discount, total,
-    method: paymentMethod,
-    generalComment
-  };
-}
-
-function generateCombinedHTML(ticket){
-  const logoSrc = 'logo';
-  const chefLogo = 'cocina.png';
-  const client = `
-    <div class="ticket client">
-      <img src="${logoSrc}" class="logo" onerror="this.onerror=null;this.src='logo.png';" />
-      <div style="text-align:center;font-weight:900;font-size:18px">TORTILLAS DE HARINA LAS PICONAS</div>
-      <div style="text-align:center;font-size:12px">EVENTOS - ZONA 17, ROOSEVELT Y SAN CRISTOBAL</div>
-      <div style="text-align:center;margin-top:6px">${escapeHtml(ticket.dateFormatted)}</div>
-      <div style="text-align:center;font-size:22px;font-weight:900;margin:8px 0">ORDEN &nbsp; <span style="font-size:32px">${escapeHtml(ticket.label)}</span></div>
-      <div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:6px">DETALLE DE CONSUMO</div>
-      <table style="width:100%;font-size:15px;border-collapse:collapse">
-        <thead><tr><th style="width:70%;text-align:left">PRODUCTO</th><th style="text-align:right">PRECIO</th></tr></thead>
-        <tbody>
-          ${ticket.items.map(it=>`<tr><td style="padding:6px 0">${it.qty} x ${escapeHtml(it.name)}${it.comment?`<div style="font-size:13px;color:#333">(${escapeHtml(it.comment)})</div>`:''}</td><td style="text-align:right">${fmt(it.price*it.qty)}</td></tr>`).join('')}
-        </tbody>
-      </table>
-      <div style="margin-top:8px;font-size:15px"><strong>SUBTOTAL:</strong> ${fmt(ticket.subtotal)}</div>
-      <div style="font-size:15px"><strong>DESCUENTO:</strong> ${fmt(ticket.discount)}</div>
-      <div style="font-size:20px;font-weight:900;margin-top:6px">TOTAL: ${fmt(ticket.total)}</div>
-      <div style="margin-top:6px;font-size:13px">Forma de pago: ${escapeHtml(ticket.method)}</div>
-      ${ticket.generalComment? `<div style="margin-top:6px;font-size:13px">Comentario: ${escapeHtml(ticket.generalComment)}</div>` : ''}
-      <div style="text-align:center;margin-top:12px;font-size:13px">Gracias por su compra</div>
-    </div>
-  `;
-  const kitchen = `
-    <div class="ticket kitchen">
-      <div style="text-align:center"><img src="${chefLogo}" class="chefLogo" onerror="this.onerror=null;this.src='cocina.png';" /></div>
-      <div style="text-align:center;font-weight:900;font-size:18px;margin-top:4px">COCINA - COMANDA</div>
-      <div style="text-align:center;font-size:12px">${escapeHtml(ticket.dateFormatted)}</div>
-      <div style="text-align:center;font-size:24px;font-weight:900;margin:8px 0">ORDEN NO. ${escapeHtml(ticket.label)}</div>
-      ${ticket.generalComment? `<div style="font-size:13px;color:#333;margin-bottom:6px;text-align:center">Comentario general: ${escapeHtml(ticket.generalComment)}</div>` : ''}
-      <div style="margin-top:6px">
-        ${ticket.items.map(it=>`<div style="font-size:16px;margin-bottom:6px"><strong>${it.qty} x ${escapeHtml(it.name)}</strong>${it.comment?`<div style="color:#b00;font-size:14px; margin-left:6px">(${escapeHtml(it.comment)})</div>`:''}</div>`).join('')}
-      </div>
-      <div style="text-align:center;margin-top:10px;font-size:12px">--- FIN COMANDA ---</div>
-    </div>
-  `;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Tickets ${escapeHtml(ticket.id)}</title>
-    <style>
-      @media print { @page { size: 80mm auto; margin: 3mm; } body{ -webkit-print-color-adjust: exact; margin:0; } .page-break{page-break-after:always;break-after:page;} }
-      body{font-family:Arial,Helvetica,sans-serif;padding:6px;margin:0;}
-      .ticket{width:76mm;margin:0 auto;font-size:15px;padding-bottom:6px;}
-      img.logo{max-width:72mm;height:auto;display:block;margin:0 auto 6px;}
-      img.chefLogo{max-width:60mm;height:auto;display:block;margin:0 auto 6px;}
-    </style>
-  </head><body onload="setTimeout(()=>{ window.print(); },200)">
-    ${client}
-    <div class="page-break"></div>
-    ${kitchen}
-  </body></html>`;
-}
-
-function finalizeSale(){
-  if(cart.length === 0){ alert('No hay productos'); return; }
-  const sale = buildSaleObject();
-  saveSale(sale);
-  const html = generateCombinedHTML(sale);
-  const w = window.open('', '_blank', 'width=420,height=900');
-  if(!w){ alert('El navegador bloqueó la ventana de impresión. Permite pop-ups y vuelve a intentar.'); return; }
-  w.document.open(); w.document.write(html); w.document.close();
-  // cleanup
-  cart = []; discount = 0; persistWorkingCart(); broadcastState('current_cart_working', JSON.stringify(cart));
-  orderCounter = Number(orderCounter) + 1; localStorage.setItem('order_counter', orderCounter); broadcastState('order_counter', String(orderCounter));
-  renderViewer(); renderHistory();
-  setTimeout(()=> alert('Venta registrada y tickets enviados a impresión.'), 500);
-}
-
-// ============== SALES STORAGE & HISTORY =================
-function saveSale(sale){
-  const hist = JSON.parse(localStorage.getItem('sales_v3')||'[]');
-  hist.push(sale);
-  localStorage.setItem('sales_v3', JSON.stringify(hist));
-  broadcastState('sales_v3', JSON.stringify(hist));
-  localStorage.setItem('last_sale_id', sale.id);
-  broadcastState('last_sale_id', sale.id);
-}
-
-function renderHistory(filter){
-  const hist = JSON.parse(localStorage.getItem('sales_v3')||'[]');
-  const el = document.getElementById('history'); el.innerHTML='';
-  const list = (filter? hist.filter(h=> (h.id||'').toString().includes(filter) || (h.label||'').toString().includes(filter) ) : hist).slice().reverse();
-  if(list.length===0){ el.innerHTML = '<div style="color:var(--muted);padding:8px">No hay ventas aún</div>'; return; }
-  list.forEach(h=>{
-    const div = document.createElement('div'); div.className='row';
-    const left = document.createElement('div');
-    left.innerHTML = `#${h.label} - <b>${fmt(h.total)}</b> (${escapeHtml(h.method)})<div style="font-size:12px;color:var(--muted)">${escapeHtml(h.dateFormatted)}</div>`;
-    const right = document.createElement('div');
-    const btn1 = document.createElement('button'); btn1.className='action-btn'; btn1.textContent='Reimprimir Venta';
-    const btn2 = document.createElement('button'); btn2.className='action-btn'; btn2.textContent='Reimprimir Cocina';
-    const btn3 = document.createElement('button'); btn3.className='action-btn'; btn3.textContent='Detalles';
-    btn1.onclick = (e)=>{ e.stopPropagation(); printSaleOnly(h); };
-    btn2.onclick = (e)=>{ e.stopPropagation(); printKitchenOnly(h); };
-    btn3.onclick = (e)=>{ e.stopPropagation(); openDetailModal(h); };
-    right.appendChild(btn1); right.appendChild(btn2); right.appendChild(btn3);
-    div.appendChild(left); div.appendChild(right);
-    el.appendChild(div);
-  });
-}
-function printSaleOnly(ticket){
-  const combined = generateCombinedHTML(ticket);
-  // extract only client part (before page-break)
-  const parts = combined.split('<div class="page-break"></div>');
-  const html = parts[0] + '</body></html>';
-  const w = window.open('', '_blank', 'width=420,height=720'); if(!w) return alert('Bloqueador de ventanas'); w.document.open(); w.document.write(html); w.document.close(); setTimeout(()=>{ try{ w.print(); }catch(e){} },200);
-}
-function printKitchenOnly(ticket){
-  const combined = generateCombinedHTML(ticket);
-  const parts = combined.split('<div class="page-break"></div>');
-  const html = '<!doctype html><html><head><meta charset="utf-8"><title>Comanda</title></head><body>' + parts[1] + '</body></html>';
-  const w = window.open('', '_blank', 'width=420,height=720'); if(!w) return alert('Bloqueador de ventanas'); w.document.open(); w.document.write(html); w.document.close(); setTimeout(()=>{ try{ w.print(); }catch(e){} },200);
-}
-
-function openDetailModal(ticket){
-  const w = window.open('', '_blank', 'width=480,height=640');
-  let html = `<html><head><meta charset="utf-8"><title>Detalle ${escapeHtml(ticket.label)}</title></head><body style="font-family:Arial;padding:12px">`;
-  html += `<h3>Detalle ${escapeHtml(ticket.label)}</h3>`;
-  html += `<div>Fecha: ${escapeHtml(ticket.dateFormatted)}</div>`;
-  html += `<div>Forma: ${escapeHtml(ticket.method)}</div>`;
-  html += `<div>Comentario: ${escapeHtml(ticket.generalComment || '')}</div>`;
-  html += `<ul>`;
-  ticket.items.forEach(it => { html += `<li>${it.qty} x ${escapeHtml(it.name)} - Q${(it.price*it.qty).toFixed(2)}${it.comment?` - (${escapeHtml(it.comment)})`:''}</li>`; });
-  html += `</ul><div><strong>Total: ${fmt(ticket.total)}</strong></div>`;
-  html += `</body></html>`;
-  w.document.write(html); w.document.close();
-}
-
-// ============== CLOSE SHIFT (code 22782522) ==============
-document.getElementById('btnCloseShift').onclick = ()=>{
-  const code = prompt('Ingrese código de cierre:');
-  if(code === null) return;
-  if(code !== '22782522'){ alert('Código incorrecto'); return; }
-  const hist = JSON.parse(localStorage.getItem('sales_v3')||'[]');
-  if(hist.length === 0){ alert('No hay ventas para cierre'); return; }
-  let totalEfectivo = 0, totalTarjeta = 0, totalGeneral = 0;
-  hist.forEach(h=>{
-    if((h.method || '').toUpperCase().includes('EFECTIVO')) totalEfectivo += h.total;
-    else totalTarjeta += h.total;
-    totalGeneral += h.total;
-  });
-  const cierre = { date: new Date().toISOString(), totalEfectivo, totalTarjeta, totalGeneral, tickets: hist.map(h=>({ id: h.id, label: h.label, date: h.dateFormatted, total: h.total, method: h.method })) };
-  const html = generateCloseHTML(cierre);
-  const w = window.open('', '_blank', 'width=420,height=720');
-  if(!w){ alert('No se pudo abrir ventana de impresión. Permite pop-ups.'); return; }
-  w.document.open(); w.document.write(html); w.document.close();
-  setTimeout(()=>{ try{ w.print(); }catch(e){ console.warn(e); } }, 300);
-  // after printing, clear history
-  localStorage.setItem('sales_v3', JSON.stringify([]));
-  broadcastState('sales_v3', JSON.stringify([]));
-  alert('Cierre realizado. Historial de ventas eliminado.');
-  renderHistory();
-};
-
-function generateCloseHTML(cierre){
-  const logoSrc = 'logo';
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Cierre</title>
-    <style>@media print{@page{size:80mm auto;margin:3mm}} body{font-family:Arial;padding:6px;margin:0}.ticket{width:76mm;margin:0 auto}.center{text-align:center}.total{font-weight:700}</style>
-    </head><body onload="setTimeout(()=>{ window.print(); },150)">
-      <div class="ticket">
-        <img src="${logoSrc}" style="max-width:72mm;display:block;margin:0 auto 6px" onerror="this.onerror=null;this.src='logo.png';"/>
-        <div class="center" style="font-weight:700">CIERRE DE VENTAS - TORTILLAS DE HARINA LAS PICONAS</div>
-        <div class="center">${escapeHtml(new Date(cierre.date).toLocaleString())}</div>
-        <div style="margin-top:8px">Total Efectivo: Q${cierre.totalEfectivo.toFixed(2)}</div>
-        <div>Total Tarjeta: Q${cierre.totalTarjeta.toFixed(2)}</div>
-        <div style="margin-top:6px;font-weight:700">Total General: Q${cierre.totalGeneral.toFixed(2)}</div>
-        <div style="margin-top:8px;font-size:12px">Tickets incluidos:</div>
-        <div style="font-size:12px">${cierre.tickets.map(t=>`${escapeHtml(t.label)} - ${escapeHtml(t.date)} - Q${t.total.toFixed(2)} - ${escapeHtml(t.method)}`).join('<br/>')}</div>
-      </div>
-    </body></html>`;
-}
-
-// ============== INIT & EVENTS =================
-function init(){
-  renderCategories();
-  renderHistory();
-  renderViewer();
-  updateCurrentOrderUI();
-  // hide cobrar until login
-  document.getElementById('btnCobrarTop').style.display = 'none';
-}
-init();
-
-// login flow
-document.getElementById('btnLogin').onclick = ()=>{
-  const u = document.getElementById('user').value;
-  const p = document.getElementById('pass').value;
-  if(u==='CAJERO' && p==='123'){
-    document.getElementById('login').style.display = 'none';
-    document.getElementById('appRoot').style.display = 'grid';
-    // show cobrar button now
-    document.getElementById('btnCobrarTop').style.display = 'block';
-    renderCategories(); renderHistory(); renderViewer(); updateCurrentOrderUI(); showAdminMenu();
-  } else {
-    alert('Usuario o clave incorrecta');
-  }
-};
-
-// link cobrar top to finalize
-document.getElementById('btnCobrarTop').onclick = ()=> finalizeSale();
-document.getElementById('finalizar').onclick = ()=> finalizeSale();
-
-// misc UI events
-document.getElementById('btnAddCategory').onclick = ()=> addCategory();
-document.getElementById('btnAddProduct').onclick = ()=> addProduct();
-document.getElementById('plus').onclick = ()=> document.getElementById('qty').stepUp();
-document.getElementById('minus').onclick = ()=> document.getElementById('qty').stepDown();
-document.getElementById('btnDeleteLast').onclick = ()=>{ if(cart.length>0){ cart.pop(); persistWorkingCart(); broadcastState('current_cart_working', JSON.stringify(cart)); renderViewer(); } };
-document.getElementById('coupon').onclick = ()=>{ const d = parseFloat(prompt('Ingrese descuento Q')); if(!isNaN(d)){ discount = d; recalc(); } };
-document.getElementById('btnSearch').onclick = ()=>{ const q=document.getElementById('searchId').value.trim(); renderHistory(q); };
-document.getElementById('btnExport').onclick = ()=>{ const data=localStorage.getItem('sales_v3') || '[]'; const blob=new Blob([data],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ventas.json'; a.click(); };
-
-// change order number button next to totals
-document.getElementById('btnChangeOrder').onclick = ()=>{
-  const v = prompt('Ingrese número para el próximo orden (ej: 25 significa A25):', String(orderCounter));
-  if(!v) return;
-  const n = Number(v);
-  if(isNaN(n) || n<1){ alert('Número inválido'); return; }
-  orderCounter = n;
-  localStorage.setItem('order_counter', orderCounter);
-  broadcastState('order_counter', String(orderCounter));
-  updateCurrentOrderUI();
-  alert('Número de orden actualizado a A ' + orderCounter);
-};
-
-// payment method buttons
-document.getElementById('btn-cash').onclick = ()=> { paymentMethod='EFECTIVO'; document.getElementById('btn-cash').classList.add('pay-active'); document.getElementById('btn-card').classList.remove('pay-active'); };
-document.getElementById('btn-card').onclick = ()=> { paymentMethod='TARJETA'; document.getElementById('btn-card').classList.add('pay-active'); document.getElementById('btn-cash').classList.remove('pay-active'); };
-
-
-// === HAMBURGUESA Y ADMINISTRACIÓN ===
-const coloresIntensos = ["#e74c3c","#27ae60","#2980b9","#f39c12","#8e44ad","#d35400","#16a085","#c0392b"];
-function toggleMenu(){ const m=document.getElementById('menuLateral'); m.style.left = (m.style.left==='0px')?'-260px':'0px'; }
-document.getElementById('menuHamburguesa').onclick = toggleMenu;
-
-Array.from(document.querySelectorAll('#menuLateral a')).forEach(a=>{
-  a.onclick = (ev)=>{
-    ev.preventDefault(); toggleMenu();
-    const act = a.dataset.action;
-    const code = prompt('Ingrese clave de administrador:');
-    if(code!=='22782522'){ alert('Clave incorrecta'); return; }
-    if(act==='addCat') addCategory();
-    else if(act==='editCat'){ const n=prompt('Nombre de la categoría a modificar:'); if(n&&CATEGORIES[n]) editCategory(n); else alert('Categoría no encontrada.'); }
-    else if(act==='delCat'){ const n=prompt('Nombre de la categoría a eliminar:'); if(n&&CATEGORIES[n]) deleteCategory(n); else alert('Categoría no encontrada.'); }
-    else if(act==='addProd') addProduct();
-    else if(act==='editProd'){ const c=prompt('Categoría del producto:'); if(c&&CATEGORIES[c]){ const p=prompt('Índice o nombre del producto:'); editProduct(c,0); } }
-    else if(act==='delProd'){ const c=prompt('Categoría del producto:'); if(c&&CATEGORIES[c]) deleteProduct(c,0); }
-  };
-});
-
-// Mostrar menú después del login
-function showAdminMenu(){ document.getElementById('menuHamburguesa').style.display='block'; }
-
-// === COLORES AUTOMÁTICOS INTENSOS ===
-function getNextColor(){
-  const used = Object.values(CATEGORIES).map(c=>c.color);
-  for(let col of coloresIntensos){ if(!used.includes(col)) return col; }
-  return coloresIntensos[Math.floor(Math.random()*coloresIntensos.length)];
-}
-
-// Sobrescribir addCategory y addProduct mínimamente
-const oldAddCategory = addCategory;
-addCategory = function(){
-  const name = prompt('Nombre de la nueva categoría:');
-  if(!name) return;
-  if(CATEGORIES[name]){ alert('Categoría ya existe'); return; }
-  const color = getNextColor();
-  CATEGORIES[name] = { color: color, products: [] };
-  persistCategories(); renderCategories();
-};
-
-const oldAddProduct = addProduct;
-addProduct = function(){
-  const cat = prompt('Categoría del producto:');
-  if(!cat) return alert('Ingrese categoría');
-  if(!CATEGORIES[cat]) return alert('Categoría no existe');
-  const name = prompt('Nombre del producto:');
-  if(!name) return alert('Ingrese nombre');
-  const price = parseFloat(prompt('Precio del producto:'));
-  if(isNaN(price)) return alert('Precio inválido');
-  const color = CATEGORIES[cat].color || getNextColor();
-  CATEGORIES[cat].products.push({ name, price, color });
-  persistCategories(); showProducts(cat);
-};
-
-// sync between windows
-window.addEventListener('storage', (ev)=>{
-  if(!ev.key) return;
-  try{
-    if(ev.key === 'categories_v3' && ev.newValue){ CATEGORIES = JSON.parse(ev.newValue); renderCategories(); }
-    else if(ev.key === 'sales_v3'){ renderHistory(); }
-    else if(ev.key === 'current_cart_working'){ try{ cart = JSON.parse(ev.newValue || '[]'); }catch(e){ cart = []; } renderViewer(); }
-    else if(ev.key === 'order_counter'){ orderCounter = Number(ev.newValue || 1); updateCurrentOrderUI(); }
-  }catch(e){ console.warn('sync failed', e); }
-});
-</script>
-
+  </script>
 </body>
 </html>
