@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>PARQUEO MULTICARS — Administrativo</title>
+  <title>PARQUEO MULTICARS — BETA3.1</title>
 
   <!-- Bibliotecas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -108,17 +108,17 @@
         <button data-view="export">⬇️ Exportar</button>
         <button data-view="users">👥 Usuarios</button>
         <button data-view="cierres">🗓️ Cierres</button>
-        <button data-view="config">⚙️ Configuración</button>
+        <button data-view="config">⚙️ Informacion</button>
       </div>
 
-      <div style="margin-top:12px" class="small">Datos locales: LocalStorage • Marca: MarckBusiness</div>
+      <div style="margin-top:12px" class="small">Powered By: MarckBusiness Solutions</div>
     </aside>
 
     <main class="main">
       <div class="topbar">
         <div>
-          <div style="font-size:18px;font-weight:700">PARQUEO MULTICARS — Panel</div>
-          <div class="muted">Mismo cálculo de tarifas • Exportar a Excel (.xlsx) con logo</div>
+          <div style="font-size:18px;font-weight:700">PARQUEO MULTICARS — BETA3.1</div>
+          <div class="muted">VERSION DE PRUEBA</div>
         </div>
 
         <div class="controls">
@@ -193,8 +193,8 @@
       <section id="view-export" class="card view" style="display:none">
         <h3>Exportar</h3>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn primary" id="exportJSON">Exportar JSON</button>
-          <button class="btn" id="importJSONBtn">Importar JSON</button>
+          <button class="btn primary" id="exportJSON">NO AVIABLE</button>
+          <button class="btn" id="importJSONBtn">NO AVIABLE</button>
           <input type="file" id="fileImport" accept="application/json" style="display:none"/>
         </div>
         <div id="importResult" class="muted" style="margin-top:12px"></div>
@@ -214,7 +214,7 @@
         <h3>Cierres diarios</h3>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn primary" id="btnGenerarCierre">Generar cierre</button>
-          <button class="btn" id="btnExportCierresXLS">Exportar cierres (.xlsx)</button>
+          <button class="btn" id="btnExportCierresXLS">Exportar cierres (EXCEL)</button>
         </div>
         <div style="height:12px"></div>
         <div class="table-wrap">
@@ -227,10 +227,10 @@
 
       <section id="view-config" class="card view" style="display:none">
         <h3>Configuración</h3>
-        <div style="margin-top:8px" class="muted">Firma y derechos</div>
+        <div style="margin-top:8px" class="muted">----------------------------------</div>
         <div style="margin-top:10px">© MarckBusiness 2025 — iParking <span class="crown">👑</span></div>
         <div style="height:8px"></div>
-        <button class="btn" id="btnResetTarifas">Restaurar tarifas originales</button>
+        <button class="btn" id="btnResetTarifas">BUTTOM PROGRAM</button>
       </section>
 
       <footer>© MarckBusiness 2025 — iParking <span class="crown">👑</span></footer>
