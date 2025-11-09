@@ -5,19 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>PARQUEO MULTICARS — Administrativo</title>
 
+  <!-- Bibliotecas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
   <style>
     :root{
       --bg:#071021; --panel:rgba(6,11,17,0.85); --card:rgba(255,255,255,0.02);
       --accent:#06b6d4; --accent-2:#ff7a59; --muted:#9aa6b2; --text:#e6eef3;
-      --radius:12px;
+      --radius:12px; --btn-radius:28px; --btn-min-width:90px;
     }
     *{box-sizing:border-box}
     html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
     body::before{content:"";position:fixed;inset:0;background-image:url('121212.png');background-size:cover;background-position:center;filter:blur(6px) brightness(0.45);z-index:0}
-    .wrap{position:relative;z-index:1;display:flex;gap:18px;padding:20px;min-height:100vh}
+    .wrap{position:relative;z-index:1;display:flex;gap:18px;padding:18px;min-height:100vh}
     @media(max-width:1000px){.wrap{flex-direction:column;padding:12px}}
 
     .sidebar{width:280px;min-width:220px;background:var(--panel);border-radius:var(--radius);padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
@@ -51,13 +53,38 @@
     .stat h3{margin:0;font-size:20px}
     footer{color:var(--muted);text-align:center;margin-top:8px;font-size:13px;position:fixed;left:0;bottom:6px;width:100%;z-index:2}
     .crown{display:inline-block;margin-left:8px;color:#ffd54a}
-    .icon-btn{background:transparent;border:none;padding:6px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
-    .icon-btn svg{width:18px;height:18px;opacity:0.95}
     .muted{color:var(--muted);font-size:13px}
     .barcode-img{max-width:160px;margin-top:8px}
     .users-list{max-height:28vh;overflow:auto;margin-top:8px}
     .users-list li{display:flex;justify-content:space-between;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.01);margin-bottom:6px}
-    @media(max-width:1000px){.rightcol{width:100%;order:2}.sidebar{width:100%;order:3}.main{order:1}}
+
+    /* Botones redondos con texto (acción en filas) */
+    .action-btn {
+      border-radius: var(--btn-radius);
+      padding: 6px 12px;
+      min-width: var(--btn-min-width);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border: none;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      transition: transform .12s, background .12s;
+      font-weight:600;
+      font-size:0.95rem;
+    }
+    .action-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.04); }
+    .action-btn.exit { background: linear-gradient(90deg,#4ade80,#16a34a); color:#012 }
+    .action-btn.gym { background: linear-gradient(90deg,#facc15,#f97316); color:#012 }
+    .action-btn.ticket { background: linear-gradient(90deg,#60a5fa,#0369a1); color:#012 }
+    .action-btn.delete { background: linear-gradient(90deg,#fb7185,#ef4444); color:#012 }
+
+    @media(max-width:1000px){
+      .rightcol{width:100%;order:2}.sidebar{width:100%;order:3}.main{order:1}
+      .action-btn{min-width:72px;padding:6px 8px;font-size:0.85rem}
+    }
   </style>
 </head>
 <body>
@@ -80,6 +107,7 @@
         <button data-view="registro">📋 Historial</button>
         <button data-view="export">⬇️ Exportar</button>
         <button data-view="users">👥 Usuarios</button>
+        <button data-view="cierres">🗓️ Cierres</button>
         <button data-view="config">⚙️ Configuración</button>
       </div>
 
@@ -90,13 +118,14 @@
       <div class="topbar">
         <div>
           <div style="font-size:18px;font-weight:700">PARQUEO MULTICARS — Panel</div>
-          <div class="muted">Mismo cálculo de tarifas • Exportar a Excel con logo</div>
+          <div class="muted">Mismo cálculo de tarifas • Exportar a Excel (.xlsx) con logo</div>
         </div>
 
         <div class="controls">
           <input id="search" type="search" placeholder="Buscar placa o marca..." style="padding:8px 10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"/>
           <button class="btn ghost" id="btnClearAll" title="Limpiar registros">Limpiar</button>
-          <button class="btn primary" id="btnExportXLS" title="Exportar Excel">Exportar Excel</button>
+          <button class="btn primary" id="btnExportXLS" title="Exportar Excel (.xlsx)">Exportar .xlsx</button>
+          <button class="btn" id="btnExportVisualXLS" title="Exportar Excel visual (.xls)">Exportar visual</button>
           <button class="btn" id="btnPrintSummary" title="Imprimir resumen">Imprimir</button>
         </div>
       </div>
@@ -142,15 +171,9 @@
               <h4 style="margin:0">Acciones rápidas</h4>
               <div style="height:8px"></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="icon-btn" id="iconExportXLS" title="Exportar Excel">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="currentColor" stroke-width="1.6"/><path d="M8 7l4-4 4 4" stroke="currentColor" stroke-width="1.6"/></svg>
-                </button>
-                <button class="icon-btn" id="iconPrint" title="Imprimir resumen">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9v6h12V9"/><rect x="6" y="3" width="12" height="4" rx="1" stroke="currentColor" stroke-width="1.2"/></svg>
-                </button>
-                <button class="icon-btn" id="iconClear" title="Limpiar registros">
-                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 7h12M9 7v10M15 7v10M5 7l1-2h12l1 2" stroke="currentColor" stroke-width="1.3"/></svg>
-                </button>
+                <button class="btn" id="iconExportXLS" title="Exportar .xlsx">Excel</button>
+                <button class="btn" id="iconPrint" title="Imprimir resumen">Imprimir</button>
+                <button class="btn" id="iconClear" title="Limpiar registros">Limpiar</button>
               </div>
             </div>
           </aside>
@@ -187,6 +210,21 @@
         <ul class="users-list" id="usersList"></ul>
       </section>
 
+      <section id="view-cierres" class="card view" style="display:none">
+        <h3>Cierres diarios</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn primary" id="btnGenerarCierre">Generar cierre</button>
+          <button class="btn" id="btnExportCierresXLS">Exportar cierres (.xlsx)</button>
+        </div>
+        <div style="height:12px"></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Fecha</th><th>Cantidad</th><th>Total Q</th><th>Acciones</th></tr></thead>
+            <tbody id="cierresTable"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section id="view-config" class="card view" style="display:none">
         <h3>Configuración</h3>
         <div style="margin-top:8px" class="muted">Firma y derechos</div>
@@ -202,9 +240,11 @@
   <script>
     const STORAGE_KEY = 'parqueo_multicars_v1';
     const USERS_KEY = 'parqueo_multicars_users_v1';
+    const CIERRES_KEY = 'parqueo_multicars_cierres_v1';
 
     let registros = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    let cierres = JSON.parse(localStorage.getItem(CIERRES_KEY) || '[]');
 
     const tarifas = [
       {min:0,max:5,precio:0},{min:6,max:35,precio:5},{min:36,max:65,precio:8},{min:66,max:95,precio:13},
@@ -216,7 +256,7 @@
     ];
 
     function uid(p='id'){return p+'_'+Math.random().toString(36).slice(2,9)}
-    function save(){localStorage.setItem(STORAGE_KEY, JSON.stringify(registros)); localStorage.setItem(USERS_KEY, JSON.stringify(users))}
+    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(registros)); localStorage.setItem(USERS_KEY, JSON.stringify(users)); localStorage.setItem(CIERRES_KEY, JSON.stringify(cierres)); }
 
     function calcularPago(horaIngreso, horaSalida){
       const entrada = new Date(horaIngreso), salida = new Date(horaSalida);
@@ -238,14 +278,14 @@
           <td>${r.horaSalida?new Date(r.horaSalida).toLocaleString():'-'}</td>
           <td>${r.total!=null?'Q'+Number(r.total).toFixed(2):'-'}</td>
           <td>
-            ${r.horaSalida?'':`<button class="icon-btn" data-idx="${i}" data-action="salir" title="Salir"><svg viewBox="0 0 24 24" fill="none"><path d="M6 12h12" stroke="currentColor" stroke-width="1.4"/><path d="M13 7l5 5-5 5" stroke="currentColor" stroke-width="1.4"/></svg></button>
-            <button class="icon-btn" data-idx="${i}" data-action="gym" title="GYM"><svg viewBox="0 0 24 24" fill="none"><path d="M7 7v10" stroke="currentColor" stroke-width="1.4"/><path d="M17 7v10" stroke="currentColor" stroke-width="1.4"/><path d="M3 11h18" stroke="currentColor" stroke-width="1.4"/></svg></button>`}
-            <button class="icon-btn" data-idx="${i}" data-action="ticket" title="Ticket"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7h18v10H3z" stroke="currentColor" stroke-width="1.2"/></svg></button>
-            <button class="icon-btn" data-idx="${i}" data-action="delete" title="Eliminar"><svg viewBox="0 0 24 24" fill="none"><path d="M6 7h12" stroke="currentColor" stroke-width="1.2"/><path d="M9 7v10" stroke="currentColor" stroke-width="1.2"/><path d="M15 7v10" stroke="currentColor" stroke-width="1.2"/></svg></button>
+            ${r.horaSalida?'':`<button class="action-btn exit" data-idx="${i}" data-action="salir">Salir</button>
+            <button class="action-btn gym" data-idx="${i}" data-action="gym">GYM</button>`}
+            <button class="action-btn ticket" data-idx="${i}" data-action="ticket">Ticket</button>
+            <button class="action-btn delete" data-idx="${i}" data-action="delete">Eliminar</button>
           </td>`;
         tbody.appendChild(tr);
       });
-      save(); actualizarResumen(); renderHistorial();
+      save(); actualizarResumen(); renderHistorial(); renderCierresTable(); renderUsers();
     }
 
     document.getElementById('btnIngresar').addEventListener('click',()=>{
@@ -378,7 +418,17 @@
       });
     }
 
-    document.getElementById('historial')?.addEventListener('click',(e)=>{const btn=e.target.closest('button'); if(!btn) return; const idx=Number(btn.dataset.idx); const action=btn.dataset.action; if(action==='view'){const r=registros[idx]; alert(`Placa: ${r.placa}\nMarca: ${r.marca}\nIngreso: ${new Date(r.horaIngreso).toLocaleString()}\nSalida: ${r.horaSalida?new Date(r.horaSalida).toLocaleString():'-'}\nTotal: ${r.total!=null?'Q'+Number(r.total).toFixed(2):'-'}`)} });
+    function renderUsers(){
+      const ul=document.getElementById('usersList'); if(!ul) return; ul.innerHTML='';
+      users.forEach((u,idx)=>{ const li=document.createElement('li'); li.innerHTML=`<div><strong>${escapeHtml(u.name)}</strong><div class="muted">${escapeHtml(u.role)}</div></div><div><button class="btn" data-idx="${idx}" data-action="edit">✏️</button><button class="btn" data-idx="${idx}" data-action="del">🗑️</button></div>`; ul.appendChild(li); });
+    }
+
+    document.getElementById('btnAddUser')?.addEventListener('click',()=>{
+      const n=document.getElementById('u_name').value.trim(); const r=document.getElementById('u_role').value.trim();
+      if(!n||!r) return alert('Nombre y rol'); users.push({id:uid('u'),name:n,role:r}); document.getElementById('u_name').value=''; document.getElementById('u_role').value=''; save(); renderUsers();
+    });
+
+    document.getElementById('usersList')?.addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; const idx=Number(b.dataset.idx); const action=b.dataset.action; if(action==='del'){ if(confirm('Eliminar usuario?')){ users.splice(idx,1); save(); renderUsers(); } } if(action==='edit'){ const u=users[idx]; const name=prompt('Editar nombre',u.name); const role=prompt('Editar rol',u.role); if(name&&role){ users[idx].name=name; users[idx].role=role; save(); renderUsers(); } } });
 
     document.getElementById('exportJSON')?.addEventListener('click',()=>{
       const blob=new Blob([JSON.stringify(registros,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='parqueo_backup_'+(new Date()).toISOString().slice(0,10)+'.json'; a.click();
@@ -389,17 +439,20 @@
       const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const data=JSON.parse(r.result); if(!Array.isArray(data)) return alert('Archivo inválido'); if(confirm('Reemplazar registros actuales? (Aceptar = reemplazar)')) registros=data; else registros=registros.concat(data); save(); actualizarTabla(); alert('Importado'); }catch(err){alert('Error al leer archivo');} }; r.readAsText(f);
     });
 
-    document.getElementById('btnExportXLS').addEventListener('click', exportExcel);
-    document.getElementById('iconExportXLS').addEventListener('click', exportExcel);
-    document.getElementById('btnPrintSummary').addEventListener('click', ()=>{
+    document.getElementById('btnExportXLS')?.addEventListener('click', exportXLSX);
+    document.getElementById('iconExportXLS')?.addEventListener('click', exportXLSX);
+
+    document.getElementById('btnExportVisualXLS')?.addEventListener('click', exportVisualXLS);
+    document.getElementById('iconPrint')?.addEventListener('click',()=>document.getElementById('btnPrintSummary').click());
+
+    document.getElementById('btnPrintSummary')?.addEventListener('click', ()=>{
       const total=registros.reduce((s,r)=>s+(r.total||0),0);
       const w=window.open('','_blank'); if(!w){alert('Permite popups.');return} w.document.write(`<html><body style="font-family:monospace;text-align:center"><h2>CIERRE DE TURNO</h2><pre>TOTAL: Q${total.toFixed(2)}</pre></body></html>`); w.document.close(); setTimeout(()=>w.print(),300);
     });
 
-    document.getElementById('btnClearAll').addEventListener('click',()=>{ if(!confirm('Borrar todos los registros?')) return; registros=[]; save(); actualizarTabla(); });
+    document.getElementById('btnClearAll')?.addEventListener('click',()=>{ if(!confirm('Borrar todos los registros?')) return; registros=[]; save(); actualizarTabla(); });
 
-    document.getElementById('iconClear').addEventListener('click',()=>document.getElementById('btnClearAll').click());
-    document.getElementById('iconPrint').addEventListener('click',()=>document.getElementById('btnPrintSummary').click());
+    document.getElementById('iconClear')?.addEventListener('click',()=>document.getElementById('btnClearAll').click());
 
     document.getElementById('search').addEventListener('input',function(){
       const q=this.value.trim().toLowerCase(); const tbody=document.getElementById('registro');
@@ -412,27 +465,80 @@
 
     document.getElementById('btnIngresar').addEventListener('keyup',(e)=>{if(e.key==='Enter') document.getElementById('btnIngresar').click()});
 
-    // Users
-    function renderUsers(){
-      const ul=document.getElementById('usersList'); ul.innerHTML='';
-      users.forEach((u,idx)=>{ const li=document.createElement('li'); li.innerHTML=`<div><strong>${escapeHtml(u.name)}</strong><div class="muted">${escapeHtml(u.role)}</div></div><div><button class="btn" data-idx="${idx}" data-action="edit">✏️</button><button class="btn" data-idx="${idx}" data-action="del">🗑️</button></div>`; ul.appendChild(li); });
-    }
-    document.getElementById('btnAddUser').addEventListener('click',()=>{ const n=document.getElementById('u_name').value.trim(); const r=document.getElementById('u_role').value.trim(); if(!n||!r) return alert('Nombre y rol'); users.push({id:uid('u'),name:n,role:r}); document.getElementById('u_name').value=''; document.getElementById('u_role').value=''; save(); renderUsers(); });
+    // CIERRES: generar, listar, exportar
+    document.getElementById('btnGenerarCierre')?.addEventListener('click', ()=> {
+      if (registros.length === 0) return alert('No hay registros para cerrar.');
+      const total = registros.reduce((s,r)=>s + (r.total || 0),0);
+      const cantidad = registros.length;
+      const cierre = { id: uid('c'), fecha: new Date().toLocaleString(), cantidad, total: Number(total).toFixed(2) };
+      cierres.push(cierre);
+      registros = [];
+      save();
+      actualizarTabla();
+      alert(`Cierre generado. Total Q${cierre.total}`);
+    });
 
-    document.getElementById('usersList')?.addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; const idx=Number(b.dataset.idx); const action=b.dataset.action; if(action==='del'){ if(confirm('Eliminar usuario?')){ users.splice(idx,1); save(); renderUsers(); } } if(action==='edit'){ const u=users[idx]; const name=prompt('Editar nombre',u.name); const role=prompt('Editar rol',u.role); if(name&&role){ users[idx].name=name; users[idx].role=role; save(); renderUsers(); } } });
-
-    function exportExcel(){
-      fetch('IMAGEN1.png').then(r=>r.blob()).then(blob=>{ const fr=new FileReader(); fr.onloadend=()=>{ const imgData=fr.result; const title='PARQUEO MULTICARS - Reporte'; const fecha=new Date().toLocaleString();
-        const header=`<table><tr><td colspan="6" style="text-align:left"><img src="${imgData}" style="max-height:80px"/></td></tr><tr><td colspan="6" style="font-weight:700;font-size:16pt">${title}</td></tr><tr><td colspan="6">Fecha: ${fecha}</td></tr></table><br/>`;
-        const cols=['Placa','Marca','Ingreso','Salida','Minutos','Total Q'];
-        const rows=registros.map(r=>{ const minutos=r.horaSalida?Math.ceil((new Date(r.horaSalida)-new Date(r.horaIngreso))/60000):''; return [escapeHtml(r.placa),escapeHtml(r.marca),new Date(r.horaIngreso).toLocaleString(),r.horaSalida?new Date(r.horaSalida).toLocaleString():'',minutos,r.total!=null?Number(r.total).toFixed(2):'' ]});
-        let table='<table border="1" style="border-collapse:collapse"><thead><tr>'+cols.map(c=>`<th style="background:#f2f2f2;padding:6px 8px">${c}</th>`).join('')+'</tr></thead><tbody>';
-        rows.forEach(rw=>{ table+='<tr>'+rw.map(c=>`<td style="padding:6px 8px">${c}</td>`).join('')+'</tr>'});
-        table+='</tbody></table>';
-        const html='<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title></head><body>'+header+table+'</body></html>';
-        const blobFile=new Blob([html],{type:'application/vnd.ms-excel'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobFile); a.download='parqueo_multicars_'+(new Date()).toISOString().slice(0,10)+'.xls'; a.click();
-      }; fr.readAsDataURL(blob); });
+    function renderCierresTable(){
+      const tbody = document.getElementById('cierresTable'); if(!tbody) return; tbody.innerHTML = '';
+      cierres.forEach((c,i)=>{ const tr = document.createElement('tr'); tr.innerHTML = `<td>${i+1}</td><td>${c.fecha}</td><td>${c.cantidad}</td><td>Q${c.total}</td><td><button class="btn" data-idx="${i}" data-action="view">Ver</button> <button class="btn" data-idx="${i}" data-action="del">Eliminar</button></td>`; tbody.appendChild(tr); });
     }
+
+    document.getElementById('cierresTable')?.addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; const idx=Number(b.dataset.idx); const action=b.dataset.action; if(action==='view'){ const c=cierres[idx]; alert(`Fecha: ${c.fecha}\nCantidad: ${c.cantidad}\nTotal: Q${c.total}`) } if(action==='del'){ if(confirm('Eliminar cierre?')){ cierres.splice(idx,1); save(); renderCierresTable(); } } });
+
+    // EXPORT .xlsx usando SheetJS (datos puros, .xlsx descargable)
+    function exportXLSX(){
+      try {
+        const wb = XLSX.utils.book_new();
+        const title = 'PARQUEO MULTICARS - Registros';
+        const fecha = new Date().toLocaleString();
+        const ws_data = [['Placa','Marca','Ingreso','Salida','Minutos','Total Q']];
+        registros.forEach(r=>{
+          const minutos = r.horaSalida ? Math.ceil((new Date(r.horaSalida)-new Date(r.horaIngreso))/60000) : '';
+          ws_data.push([r.placa, r.marca, new Date(r.horaIngreso).toLocaleString(), r.horaSalida?new Date(r.horaSalida).toLocaleString():'', minutos, r.total!=null?Number(r.total).toFixed(2):'']);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Registros');
+        // agregar hoja resumen
+        const resumen = [['Reporte', title], ['Fecha', fecha], ['Total registros', registros.length], ['Total recaudado', registros.reduce((s,r)=>s+(r.total||0),0)]];
+        const ws2 = XLSX.utils.aoa_to_sheet(resumen);
+        XLSX.utils.book_append_sheet(wb, ws2, 'Resumen');
+        XLSX.writeFile(wb, 'parqueo_multicars_registros_'+(new Date()).toISOString().slice(0,10)+'.xlsx');
+      } catch(err){ console.error(err); alert('Error creando .xlsx'); }
+    }
+
+    // Export visual (.xls) con logo embebido como HTML (para abrir en Excel y ver logo)
+    function exportVisualXLS(){
+      fetch('IMAGEN1.png').then(r=>r.blob()).then(blob=>{
+        const fr = new FileReader();
+        fr.onloadend = () => {
+          const imgData = fr.result;
+          const title = 'PARQUEO MULTICARS - Reporte';
+          const fecha = new Date().toLocaleString();
+          const header = `<table><tr><td colspan="6" style="text-align:left"><img src="${imgData}" style="max-height:80px"/></td></tr><tr><td colspan="6" style="font-weight:700;font-size:16pt">${title}</td></tr><tr><td colspan="6">Fecha: ${fecha}</td></tr></table><br/>`;
+          const cols=['Placa','Marca','Ingreso','Salida','Minutos','Total Q'];
+          const rows = registros.map(r=>{ const minutos=r.horaSalida?Math.ceil((new Date(r.horaSalida)-new Date(r.horaIngreso))/60000):''; return [escapeHtml(r.placa),escapeHtml(r.marca),new Date(r.horaIngreso).toLocaleString(),r.horaSalida?new Date(r.horaSalida).toLocaleString():'',minutos,r.total!=null?Number(r.total).toFixed(2):'']});
+          let table = '<table border="1" style="border-collapse:collapse"><thead><tr>'+cols.map(c=>`<th style="background:#f2f2f2;padding:6px 8px">${c}</th>`).join('')+'</tr></thead><tbody>';
+          rows.forEach(rw=>{ table+='<tr>'+rw.map(c=>`<td style="padding:6px 8px">${c}</td>`).join('')+'</tr>'});
+          table+='</tbody></table>';
+          const html = '<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title></head><body>'+header+table+'</body></html>';
+          const blobFile = new Blob([html],{type:'application/vnd.ms-excel'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobFile);
+          a.download='parqueo_multicars_visual_'+(new Date()).toISOString().slice(0,10)+'.xls'; a.click();
+        };
+        fr.readAsDataURL(blob);
+      }).catch(err=>{ alert('No se pudo leer IMAGEN1.png para el Excel visual'); console.error(err); });
+    }
+
+    // Exportar cierres a .xlsx
+    document.getElementById('btnExportCierresXLS')?.addEventListener('click', ()=>{
+      try{
+        const wb = XLSX.utils.book_new();
+        const ws_data = [['#','Fecha','Cantidad','Total Q']];
+        cierres.forEach((c,i)=> ws_data.push([i+1,c.fecha,c.cantidad,c.total]));
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Cierres');
+        XLSX.writeFile(wb, 'parqueo_multicars_cierres_'+(new Date()).toISOString().slice(0,10)+'.xlsx');
+      }catch(e){console.error(e);alert('Error exportando cierres');}
+    });
 
     document.getElementById('btnExportCSV')?.addEventListener('click',()=>{
       const rows=[['placa','marca','horaIngreso','horaSalida','total']];
@@ -441,15 +547,13 @@
       const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='parqueo_'+(new Date()).toISOString().slice(0,10)+'.csv'; a.click();
     });
 
-    document.getElementById('btnPrintSummary')?.addEventListener('click',()=>{const total=registros.reduce((s,r)=>s+(r.total||0),0); const w=window.open('','_blank'); if(!w){alert('Permite popups');return} w.document.write(`<html><body style="font-family:monospace;text-align:center"><h2>CIERRE DE TURNO</h2><pre>TOTAL: Q${total.toFixed(2)}</pre></body></html>`); w.document.close(); setTimeout(()=>w.print(),300);});
-
     document.getElementById('placa').addEventListener('keyup',(e)=>{ if(e.key==='Enter') document.getElementById('marca').focus()});
     document.getElementById('marca').addEventListener('keyup',(e)=>{ if(e.key==='Enter') document.getElementById('btnIngresar').click()});
 
-    function init(){ actualizarTabla(); renderUsers(); document.querySelector('#menu button[data-view="dashboard"]').click(); }
+    function init(){ actualizarTabla(); document.querySelector('#menu button[data-view="dashboard"]').click(); renderCierresTable(); }
     init();
 
-    window.PM={registros,users,save,calcularPago,tarifas};
+    window.PM={registros,users,save,calcularPago,tarifas,cierres};
   </script>
 </body>
-</html> 
+</html>
