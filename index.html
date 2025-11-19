@@ -1079,14 +1079,6 @@ document.querySelectorAll("#menuLateral a").forEach(a=>{
     if(act === "delProd")  adminDeleteProduct();
 
     if(act === "openHistory") openHistoryModal();
-       // Botón de HISTORIAL en el encabezado
-const btnHistoryHeader = document.getElementById("btnHistoryHeader");
-if(btnHistoryHeader){
-  btnHistoryHeader.onclick = () => {
-    openHistoryModal();
-  };
-}
-
     if(act === "changeOrderPrefix") openChangeOrderPrefix();
   };
 });
@@ -1274,6 +1266,14 @@ function renderHistoryModal(){
   });
 }
 
+/* Botón de historial en el encabezado */
+const btnHistoryHeader = document.getElementById("btnHistoryHeader");
+if(btnHistoryHeader){
+  btnHistoryHeader.onclick = () => {
+    openHistoryModal();
+  };
+}
+
 
 
 /* ========================================
@@ -1284,22 +1284,22 @@ document.getElementById("btnLogin").onclick = ()=>{
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
 
-if(u === "CAJERO" && p === "123"){
+  if(u === "CAJERO" && p === "123"){
     document.getElementById("login").style.display = "none";
     document.getElementById("appRoot").style.display = "grid";
 
-    // mostrar botones superiores
-    document.getElementById("btnCobrarTop").style.display = "block";
+    // mostrar solo el menú hamburguesa (el botón COBRAR ya está en totales)
     document.getElementById("menuHamburguesa").style.display = "block";
 
     updateOrderLabel();
     renderCategories();
     renderViewer();
-} else {
+  } else {
     alert("Usuario o clave incorrecta");
-}
-
+  }
 };
+
+
 /* ==========================================================
       SISTEMA V8 - JAVASCRIPT ORDENADO (PARTE 2/2)
 ========================================================== */
@@ -1338,10 +1338,10 @@ function buildSaleObject(){
       price:i.price,
       comment:i.comment || ""
     })),
-    subtotal,
-    discount,
-    total,
-    payment: paymentMethod
+      subtotal,
+      discount,
+      total,
+      payment: paymentMethod
   };
 }
 
@@ -1473,7 +1473,6 @@ function reprintKitchen(id){
 /* ========================================
    FINALIZAR VENTA
 ======================================== */
-document.getElementById("finalizar").onclick =
 document.getElementById("finalizar").onclick = ()=>{
 
   if(cart.length === 0){
@@ -1509,7 +1508,6 @@ document.getElementById("finalizar").onclick = ()=>{
 
   alert("Venta registrada e impresiones enviadas.");
 };
-
 
 
 
@@ -1604,8 +1602,6 @@ function init(){
 }
 
 init();
-
-
 </script>
 
 </body>
