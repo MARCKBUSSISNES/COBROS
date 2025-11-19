@@ -562,7 +562,6 @@ html,body{
 <!-- =========================================
      BOTÓN COBRAR SUPERIOR (solo tras login)
 ========================================= -->
-<button id="btnCobrarTop" title="Cobrar">COBRAR 💵</button>
 
 
 <!-- =========================================
@@ -677,60 +676,57 @@ html,body{
   <!-- ========================
        PANEL CENTRAL
   ========================= -->
-  <div class="center">
+<div class="center">
 
-    <!-- TOPBAR -->
-    <div class="topbar">
-      <div style="font-weight:800;font-size:20px">Visor de Cliente</div>
+  <!-- TOPBAR con botón de HISTORIAL -->
+  <div class="topbar">
+    <div style="font-weight:800;font-size:20px">Visor de Cliente</div>
+    <button id="btnHistoryHeader" class="action-btn">Historial</button>
+  </div>
+
+  <!-- ORDEN ACTUAL -->
+  <div class="current-order" id="currentOrder">Orden: AF000001</div>
+
+  <!-- TOTALES ARRIBA + COBRAR INTEGRADO -->
+  <div class="totals-box">
+    <div class="total-row">
+      <span>Subtotal</span>
+      <span id="subtotal">Q0.00</span>
     </div>
 
-    <!-- ORDEN ACTUAL -->
-    <div class="current-order" id="currentOrder">Orden: AF000001</div>
-
-
-    <!-- VISOR -->
-    <div class="viewer" id="viewer"></div>
-
-
-
-    <!-- SELECCIÓN MÉTODO DE PAGO -->
-    <div class="pay-methods">
-      <button id="payCash" class="pay-btn active">EFECTIVO</button>
-      <button id="payCard" class="pay-btn">TARJETA</button>
+    <div class="total-row">
+      <span>Descuento</span>
+      <span id="discount">Q0.00</span>
     </div>
 
-
-
-    <!-- CONTROLES -->
-    <div class="controls">
-      <button id="minus" class="action-btn">-</button>
-      <button id="plus" class="action-btn">+</button>
-      <button id="applyDiscount" class="action-btn">Descuento</button>
-
-      <button id="finalizar" class="control-btn">Cobrar</button>
+    <div class="total-final">
+      TOTAL: <span id="total">Q0.00</span>
     </div>
 
+    <!-- Botón COBRAR integrado en el bloque de totales -->
+    <button id="finalizar" class="control-btn" style="margin-top:16px;width:100%;">
+      COBRAR
+    </button>
+  </div>
 
+  <!-- VISOR (debajo de totales) -->
+  <div class="viewer" id="viewer"></div>
 
-    <!-- TOTALES (ESTILO C) -->
-    <div class="totals-box">
-      <div class="total-row">
-        <span>Subtotal</span>
-        <span id="subtotal">Q0.00</span>
-      </div>
+  <!-- SELECCIÓN MÉTODO DE PAGO -->
+  <div class="pay-methods">
+    <button id="payCash" class="pay-btn active">EFECTIVO</button>
+    <button id="payCard" class="pay-btn">TARJETA</button>
+  </div>
 
-      <div class="total-row">
-        <span>Descuento</span>
-        <span id="discount">Q0.00</span>
-      </div>
+  <!-- CONTROLES (solo cantidad y descuento) -->
+  <div class="controls">
+    <button id="minus" class="action-btn">-</button>
+    <button id="plus" class="action-btn">+</button>
+    <button id="applyDiscount" class="action-btn">Descuento</button>
+  </div>
 
-      <div class="total-final">
-        TOTAL: <span id="total">Q0.00</span>
-      </div>
-    </div>
+</div> <!-- FIN PANEL CENTRAL -->
 
-
-  </div> <!-- FIN PANEL CENTRAL -->
 
 
 </div> <!-- FIN APP -->
@@ -1083,6 +1079,14 @@ document.querySelectorAll("#menuLateral a").forEach(a=>{
     if(act === "delProd")  adminDeleteProduct();
 
     if(act === "openHistory") openHistoryModal();
+       // Botón de HISTORIAL en el encabezado
+const btnHistoryHeader = document.getElementById("btnHistoryHeader");
+if(btnHistoryHeader){
+  btnHistoryHeader.onclick = () => {
+    openHistoryModal();
+  };
+}
+
     if(act === "changeOrderPrefix") openChangeOrderPrefix();
   };
 });
@@ -1470,7 +1474,7 @@ function reprintKitchen(id){
    FINALIZAR VENTA
 ======================================== */
 document.getElementById("finalizar").onclick =
-document.getElementById("btnCobrarTop").onclick = ()=>{
+document.getElementById("finalizar").onclick = ()=>{
 
   if(cart.length === 0){
     alert("No hay productos.");
@@ -1505,6 +1509,7 @@ document.getElementById("btnCobrarTop").onclick = ()=>{
 
   alert("Venta registrada e impresiones enviadas.");
 };
+
 
 
 
