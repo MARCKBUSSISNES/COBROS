@@ -1280,17 +1280,21 @@ document.getElementById("btnLogin").onclick = ()=>{
   const u = document.getElementById("user").value.trim();
   const p = document.getElementById("pass").value.trim();
 
-  if(u === "CAJERO" && p === "123"){
+if(u === "CAJERO" && p === "123"){
     document.getElementById("login").style.display = "none";
     document.getElementById("appRoot").style.display = "grid";
+
+    // mostrar botones superiores
     document.getElementById("btnCobrarTop").style.display = "block";
+    document.getElementById("menuHamburguesa").style.display = "block";
 
     updateOrderLabel();
     renderCategories();
     renderViewer();
-  } else {
+} else {
     alert("Usuario o clave incorrecta");
-  }
+}
+
 };
 /* ==========================================================
       SISTEMA V8 - JAVASCRIPT ORDENADO (PARTE 2/2)
