@@ -1,559 +1,1604 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>PARQUEO MULTICARS — BETA3.1</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sistema Offline - Las Piconas (Touch) V8</title>
 
-  <!-- Bibliotecas -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<style>
 
-  <style>
-    :root{
-      --bg:#071021; --panel:rgba(6,11,17,0.85); --card:rgba(255,255,255,0.02);
-      --accent:#06b6d4; --accent-2:#ff7a59; --muted:#9aa6b2; --text:#e6eef3;
-      --radius:12px; --btn-radius:28px; --btn-min-width:90px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
-    body::before{content:"";position:fixed;inset:0;background-image:url('121212.png');background-size:cover;background-position:center;filter:blur(6px) brightness(0.45);z-index:0}
-    .wrap{position:relative;z-index:1;display:flex;gap:18px;padding:18px;min-height:100vh}
-    @media(max-width:1000px){.wrap{flex-direction:column;padding:12px}}
+/* ==========================================================
+     SISTEMA COMPLETO V8 - CSS ORDENADO
+     PARTE 1/2 DEL CSS  (el resto viene en PARTE 2/5)
+   ========================================================== */
 
-    .sidebar{width:280px;min-width:220px;background:var(--panel);border-radius:var(--radius);padding:18px;box-shadow:0 12px 40px rgba(0,0,0,0.6)}
-    .brand{display:flex;gap:12px;align-items:center}
-    .logo{width:52px;height:52px;border-radius:10px;background:linear-gradient(90deg,var(--accent),#0ea5ad);display:flex;align-items:center;justify-content:center;font-weight:800;color:#012}
-    .small{font-size:13px;color:var(--muted)}
-    .menu{margin-top:14px;display:flex;flex-direction:column;gap:6px}
-    .menu button{background:transparent;border:none;color:var(--muted);text-align:left;padding:10px;border-radius:8px;cursor:pointer}
-    .menu button.active{color:var(--accent);background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(255,122,89,0.03));font-weight:600}
 
-    .main{flex:1;display:flex;flex-direction:column;gap:12px}
-    .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .controls{display:flex;gap:8px;align-items:center}
-    .btn{padding:8px;border-radius:8px;border:none;cursor:pointer;background:rgba(255,255,255,0.03);color:var(--text)}
-    .btn.primary{background:linear-gradient(90deg,var(--accent),#0ea5ad);color:#012;font-weight:600}
-    .btn.warn{background:linear-gradient(90deg,var(--accent-2),#ff936e);color:#2b0d00;font-weight:600}
-    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+/* ---------------------------
+   VARIABLES GLOBALES
+-----------------------------*/
+:root{
+  --bg:#0b0f14;
+  --panel:#0f1720;
+  --card:#0b1220;
+  --accent:#ff6b35;
+  --muted:#9aa4b2;
+  --green:#28a745;
+  --blue:#3b82f6;
 
-    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 8px 24px rgba(2,6,23,0.6)}
-    .form-row{display:flex;gap:8px;align-items:center}
-    input[type="text"], input[type="search"], select{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text);outline:none}
-    .table-wrap{overflow:auto;max-height:56vh;margin-top:12px}
-    table{width:100%;border-collapse:collapse;font-size:14px}
-    th,td{padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:center;color:var(--text)}
-    th{font-size:13px;color:var(--muted);background:rgba(0,0,0,0.12);position:sticky;top:0}
-    tr.active{background:linear-gradient(90deg, rgba(6,182,212,0.04), rgba(255,122,89,0.01))}
+  --pay-size:64px;
+  --total-size:28px;
 
-    .rightcol{width:360px;min-width:260px;display:flex;flex-direction:column;gap:12px}
-    .stats{display:flex;gap:10px;flex-wrap:wrap}
-    .stat{flex:1;min-width:120px;background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;text-align:center}
-    .stat h3{margin:0;font-size:20px}
-    footer{color:var(--muted);text-align:center;margin-top:8px;font-size:13px;position:fixed;left:0;bottom:6px;width:100%;z-index:2}
-    .crown{display:inline-block;margin-left:8px;color:#ffd54a}
-    .muted{color:var(--muted);font-size:13px}
-    .barcode-img{max-width:160px;margin-top:8px}
-    .users-list{max-height:28vh;overflow:auto;margin-top:8px}
-    .users-list li{display:flex;justify-content:space-between;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,0.01);margin-bottom:6px}
+  --radius:12px;
+  --shadow:0 6px 18px rgba(2,6,23,0.6);
+}
 
-    /* Botones redondos con texto (acción en filas) */
-    .action-btn {
-      border-radius: var(--btn-radius);
-      padding: 6px 12px;
-      min-width: var(--btn-min-width);
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      border: none;
-      cursor: pointer;
-      background: rgba(255,255,255,0.03);
-      color: var(--text);
-      transition: transform .12s, background .12s;
-      font-weight:600;
-      font-size:0.95rem;
-    }
-    .action-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.04); }
-    .action-btn.exit { background: linear-gradient(90deg,#4ade80,#16a34a); color:#012 }
-    .action-btn.gym { background: linear-gradient(90deg,#facc15,#f97316); color:#012 }
-    .action-btn.ticket { background: linear-gradient(90deg,#60a5fa,#0369a1); color:#012 }
-    .action-btn.delete { background: linear-gradient(90deg,#fb7185,#ef4444); color:#012 }
 
-    @media(max-width:1000px){
-      .rightcol{width:100%;order:2}.sidebar{width:100%;order:3}.main{order:1}
-      .action-btn{min-width:72px;padding:6px 8px;font-size:0.85rem}
-    }
-  </style>
+/* ---------------------------
+   RESETEO / BASE
+-----------------------------*/
+*{
+  box-sizing:border-box;
+  font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  background:linear-gradient(180deg,#06080a 0%, #0b0f14 100%);
+  color:#e6eef6;
+}
+
+
+/* ---------------------------
+   GRID PRINCIPAL
+-----------------------------*/
+.app{
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:14px;
+  padding:14px;
+  height:100vh;
+}
+
+/* Responsive */
+@media(max-width:1024px){
+  .app{
+    display:flex;
+    flex-direction:column;
+    height:auto;
+  }
+}
+
+
+/* ---------------------------
+   SIDEBAR (left)
+-----------------------------*/
+.sidebar{
+  background:var(--panel);
+  border-radius:var(--radius);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  box-shadow:var(--shadow);
+}
+
+.brand{
+  font-weight:800;
+  letter-spacing:0.6px;
+  padding:8px 12px;
+  font-size:18px;
+  text-align:center;
+  color:#fff;
+}
+
+.logo-preview{
+  max-width:160px;
+  margin:10px auto;
+  display:block;
+}
+
+.controls-row{
+  display:flex;
+  gap:8px;
+  margin-bottom:8px;
+}
+
+.input,
+.qty{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.06);
+  padding:10px;
+  border-radius:8px;
+  color:#e6eef6;
+}
+
+.categorias{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.cat-btn{
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.04);
+  cursor:pointer;
+  font-weight:700;
+  min-width:80px;
+  background:transparent;
+  color:#fff;
+  text-align:center;
+}
+
+
+/* ---------------------------
+   PRODUCTOS
+-----------------------------*/
+.products{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  overflow:auto;
+  padding:6px;
+  height:calc(100vh - 390px);
+}
+
+.prod-card{
+  padding:20px;
+  border-radius:14px;
+  cursor:pointer;
+  text-align:center;
+  user-select:none;
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.04);
+  font-size:17px;
+  transition:transform 0.1s ease;
+}
+
+.prod-card:hover{
+  transform:scale(1.04);
+}
+
+.prod-name{
+  font-weight:800;
+  font-size:17px;
+  margin-bottom:6px;
+}
+
+.prod-price{
+  font-size:15px;
+  color:var(--muted);
+  margin-top:4px;
+}
+
+
+/* ---------------------------
+   PANEL CENTRAL
+-----------------------------*/
+.center{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  box-shadow:var(--shadow);
+}
+
+
+/* Topbar */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+}
+
+.current-order{
+  font-size:26px;
+  font-weight:900;
+  text-align:center;
+  margin:10px 0;
+}
+
+
+/* ---------------------------
+   VIEWER (productos agregados)
+-----------------------------*/
+.viewer{
+  flex:1;
+  background:linear-gradient(180deg,#071428,#071a2a);
+  padding:12px;
+  border-radius:10px;
+  overflow:auto;
+  font-size:16px;
+}
+
+.item-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  padding:12px;
+  border-bottom:1px dashed rgba(255,255,255,0.06);
+  font-size:17px;
+}
+
+.comment-input{
+  background:transparent;
+  border:1px dashed rgba(255,255,255,0.08);
+  padding:8px;
+  border-radius:6px;
+  color:#e6eef6;
+  font-size:15px;
+  width:100%;
+}
+
+
+/* ---------------------------
+   CONTROLES ( + - eliminar cobrar )
+-----------------------------*/
+.controls{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
+
+.action-btn{
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.10);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:17px;
+  font-weight:700;
+}
+
+.control-btn{
+  flex:1;
+  padding:14px;
+  border-radius:10px;
+  background:var(--accent);
+  color:#0b1220;
+  font-weight:900;
+  font-size:18px;
+  border:none;
+  cursor:pointer;
+}
+
+
+/* ---------------------------
+   TOTALES POS (ESTILO C)
+-----------------------------*/
+.totals-box{
+  margin-top:22px;
+  background:linear-gradient(180deg,#08131f,#0d1826);
+  border-radius:14px;
+  padding:20px;
+}
+
+.total-row{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  font-size:22px;
+}
+
+.total-final{
+  font-size:34px;
+  font-weight:900;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,0.3);
+  color:#ffffff;
+}
+/* ==========================================================
+      CSS V8 ORDENADO — CONTINUACIÓN
+========================================================== */
+
+
+/* ---------------------------
+   MÉTODO DE PAGO (GRANDES)
+-----------------------------*/
+
+.pay-methods{
+  display:flex;
+  gap:16px;
+  margin-top:10px;
+}
+
+.pay-btn{
+  flex:1;
+  height:var(--pay-size);
+  border-radius:16px;
+  border:none;
+  cursor:pointer;
+  font-size:22px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:0.15s;
+  background:#1b2533;
+  color:#aab4c4;
+  box-shadow:0 0 0 2px rgba(255,255,255,0.06);
+}
+
+.pay-btn.active{
+  background:var(--green);
+  color:#fff;
+  transform:scale(1.05);
+  box-shadow:0 0 0 3px rgba(255,255,255,0.15);
+}
+
+
+/* ---------------------------
+   BOTÓN “COBRAR” GRANDE SUPERIOR
+-----------------------------*/
+#btnCobrarTop{
+  position:fixed;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:1000;
+  background:var(--green);
+  color:#fff;
+  border:none;
+  padding:16px 28px;
+  border-radius:12px;
+  font-weight:900;
+  font-size:22px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.35);
+  cursor:pointer;
+  display:none;
+}
+
+
+/* ---------------------------
+   MENÚ HAMBURGUESA
+-----------------------------*/
+#menuHamburguesa{
+  display:none;
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:1100;
+  background:#111;
+  border:none;
+  color:white;
+  font-size:30px;
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,0.4);
+}
+
+
+/* ---------------------------
+   MENÚ LATERAL ADMIN
+-----------------------------*/
+#menuLateral{
+  position:fixed;
+  top:0;
+  left:-280px;
+  width:260px;
+  height:100%;
+  background:#111827;
+  color:white;
+  z-index:1050;
+  padding-top:70px;
+  transition:left .3s;
+  box-shadow:4px 0 20px rgba(0,0,0,0.45);
+}
+
+#menuLateral a{
+  display:block;
+  padding:14px 18px;
+  color:white;
+  text-decoration:none;
+  font-size:17px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+#menuLateral a:hover{
+  background:#1f2937;
+}
+
+
+/* ---------------------------
+   HISTORIAL / MODALES
+-----------------------------*/
+
+.history-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:2000;
+}
+
+.history-box{
+  background:#0f172a;
+  width:90%;
+  max-width:480px;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 0 30px rgba(0,0,0,0.5);
+  overflow:auto;
+  max-height:85%;
+}
+
+.history-item{
+  padding:12px;
+  background:rgba(255,255,255,0.05);
+  border-radius:8px;
+  margin-bottom:10px;
+  font-size:16px;
+}
+
+
+/* ---------------------------
+   LOGIN
+-----------------------------*/
+
+.login-wrap{
+  position:fixed;
+  inset:0;
+  background:linear-gradient(90deg, rgba(2,6,23,0.9), rgba(4,10,27,0.95));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+
+.login-card{
+  background:linear-gradient(180deg,#071428,#0b1220);
+  padding:30px;
+  border-radius:16px;
+  min-width:360px;
+  box-shadow:0 8px 30px rgba(2,6,23,0.7);
+  color:#fff;
+}
+
+.login-card h2{
+  text-align:center;
+  margin:10px 0 14px;
+}
+
+.login-card .input{
+  width:100%;
+  margin-bottom:14px;
+}
+
+.login-logo{
+  max-width:140px;
+  display:block;
+  margin:0 auto 14px;
+}
+
+
+/* ---------------------------
+   HISTORIAL SIMPLE EN SIDEBAR
+-----------------------------*/
+
+.history{
+  flex:1;
+  overflow:auto;
+}
+
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:10px;
+  background:rgba(255,255,255,0.03);
+}
+
+.footer{
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+  margin-top:8px;
+}
+
+
+/* ---------------------------
+   SCROLLBAR MODERNO
+-----------------------------*/
+::-webkit-scrollbar{
+  width:8px;
+}
+::-webkit-scrollbar-thumb{
+  background:#1f2937;
+  border-radius:10px;
+}
+::-webkit-scrollbar-track{
+  background:#0f172a;
+}
+
+
+/* ---------------------------
+   IMPRESIÓN
+-----------------------------*/
+@media print{
+  body *{
+    visibility:hidden;
+  }
+  .print-area,
+  .print-area *{
+    visibility:visible;
+  }
+  .print-area{
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+  }
+}
+
+@media print{
+  @page{
+    margin:3mm;
+    size:80mm auto;
+  }
+}
+
+
+/* ---------------------------
+   FIN DEL CSS
+-----------------------------*/
+
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo">PM</div>
-        <div>
-          <div style="font-weight:800">PARQUEO MULTICARS</div>
-          <div class="small">Administración</div>
-        </div>
-      </div>
 
-      <div style="margin-top:12px">
-        <img src="IMAGEN1.png" alt="logo" style="width:100%;border-radius:8px;margin-top:10px;box-shadow:0 6px 18px rgba(0,0,0,0.3)"/>
-      </div>
+<!-- =========================================
+     BOTÓN COBRAR SUPERIOR (solo tras login)
+========================================= -->
+<button id="btnCobrarTop" title="Cobrar">COBRAR 💵</button>
 
-      <div class="menu" id="menu">
-        <button data-view="dashboard" class="active">📊 Dashboard</button>
-        <button data-view="registro">📋 Historial</button>
-        <button data-view="export">⬇️ Exportar</button>
-        <button data-view="users">👥 Usuarios</button>
-        <button data-view="cierres">🗓️ Cierres</button>
-        <button data-view="config">⚙️ Informacion</button>
-      </div>
 
-      <div style="margin-top:12px" class="small">Powered By: MarckBusiness Solutions</div>
-    </aside>
+<!-- =========================================
+     MENÚ HAMBURGUESA (solo tras login)
+========================================= -->
+<button id="menuHamburguesa" title="Menú">☰</button>
 
-    <main class="main">
-      <div class="topbar">
-        <div>
-          <div style="font-size:18px;font-weight:700">PARQUEO MULTICARS — BETA3.1</div>
-          <div class="muted">VERSION DE PRUEBA</div>
-        </div>
 
-        <div class="controls">
-          <input id="search" type="search" placeholder="Buscar placa o marca..." style="padding:8px 10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--text)"/>
-          <button class="btn ghost" id="btnClearAll" title="Limpiar registros">Limpiar</button>
-          <button class="btn primary" id="btnExportXLS" title="Exportar Excel (.xlsx)">Exportar .xlsx</button>
-          <button class="btn" id="btnExportVisualXLS" title="Exportar Excel visual (.xls)">Exportar visual</button>
-          <button class="btn" id="btnPrintSummary" title="Imprimir resumen">Imprimir</button>
-        </div>
-      </div>
+<!-- =========================================
+     MENÚ LATERAL ADMIN
+========================================= -->
+<div id="menuLateral">
 
-      <section id="view-dashboard" class="card view">
-        <div style="display:flex;gap:12px;align-items:flex-start">
-          <div style="flex:1">
-            <div class="card">
-              <h3 style="margin:0">Registrar ingreso</h3>
-              <div style="height:10px"></div>
-              <div class="form-row">
-                <input id="placa" type="text" placeholder="Placa" style="flex:1"/>
-                <input id="marca" type="text" placeholder="Marca" style="width:180px"/>
-                <button class="btn primary" id="btnIngresar" title="Ingresar (Enter)">Ingresar</button>
-                <button class="btn warn" id="btnGym" title="Registro GYM (Q0)">GYM</button>
-              </div>
-            </div>
+  <a href="#" data-action="addCat">➕ Crear Categoría</a>
+  <a href="#" data-action="editCat">✏️ Modificar Categoría</a>
+  <a href="#" data-action="delCat">❌ Eliminar Categoría</a>
 
-            <div class="card" style="margin-top:12px">
-              <h3 style="margin:0">Vehículos</h3>
-              <div class="table-wrap">
-                <table>
-                  <thead><tr><th>Placa</th><th>Marca</th><th>Ingreso</th><th>Salida</th><th>Total Q</th><th>Acciones</th></tr></thead>
-                  <tbody id="registro"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+  <a href="#" data-action="addProd">➕ Crear Producto</a>
+  <a href="#" data-action="editProd">✏️ Modificar Producto</a>
+  <a href="#" data-action="delProd">❌ Eliminar Producto</a>
 
-          <aside class="rightcol">
-            <div class="card">
-              <h3 style="margin:0">Resumen del turno</h3>
-              <div class="stats" style="margin-top:12px">
-                <div class="stat"><h3 id="statActivos">0</h3><p>Activos</p></div>
-                <div class="stat"><h3 id="statTotal">Q0.00</h3><p>Recaudado</p></div>
-                <div class="stat"><h3 id="statEntradas">0</h3><p>Entradas hoy</p></div>
-              </div>
-              <div style="height:12px"></div>
-              <canvas id="chart" height="220"></canvas>
-            </div>
+  <a href="#" data-action="openHistory">📜 Historial de Ventas</a>
 
-            <div class="card">
-              <h4 style="margin:0">Acciones rápidas</h4>
-              <div style="height:8px"></div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap">
-                <button class="btn" id="iconExportXLS" title="Exportar .xlsx">Excel</button>
-                <button class="btn" id="iconPrint" title="Imprimir resumen">Imprimir</button>
-                <button class="btn" id="iconClear" title="Limpiar registros">Limpiar</button>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </section>
+  <a href="#" data-action="changeOrderPrefix">🔤 Cambiar prefijo de orden</a>
 
-      <section id="view-registro" class="card view" style="display:none">
-        <h3>Historial completo</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Placa</th><th>Marca</th><th>Ingreso</th><th>Salida</th><th>Min</th><th>Total Q</th><th>Acciones</th></tr></thead>
-            <tbody id="historial"></tbody>
-          </table>
-        </div>
-      </section>
+</div>
 
-      <section id="view-export" class="card view" style="display:none">
-        <h3>Exportar</h3>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn primary" id="exportJSON">NO AVIABLE</button>
-          <button class="btn" id="importJSONBtn">NO AVIABLE</button>
-          <input type="file" id="fileImport" accept="application/json" style="display:none"/>
-        </div>
-        <div id="importResult" class="muted" style="margin-top:12px"></div>
-      </section>
 
-      <section id="view-users" class="card view" style="display:none">
-        <h3>Usuarios</h3>
-        <div style="display:flex;gap:12px;align-items:center">
-          <input id="u_name" type="text" placeholder="Nombre usuario" style="flex:1"/>
-          <input id="u_role" type="text" placeholder="Rol (ej: cajero)" style="width:160px"/>
-          <button class="btn primary" id="btnAddUser">Agregar</button>
-        </div>
-        <ul class="users-list" id="usersList"></ul>
-      </section>
 
-      <section id="view-cierres" class="card view" style="display:none">
-        <h3>Cierres diarios</h3>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn primary" id="btnGenerarCierre">Generar cierre</button>
-          <button class="btn" id="btnExportCierresXLS">Exportar cierres (EXCEL)</button>
-        </div>
-        <div style="height:12px"></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Fecha</th><th>Cantidad</th><th>Total Q</th><th>Acciones</th></tr></thead>
-            <tbody id="cierresTable"></tbody>
-          </table>
-        </div>
-      </section>
+<!-- =========================================
+     MODAL DE HISTORIAL
+========================================= -->
+<div class="history-modal" id="historyModal">
+  <div class="history-box">
+    <h2 style="margin-top:0;margin-bottom:14px;text-align:center">Historial de Ventas</h2>
 
-      <section id="view-config" class="card view" style="display:none">
-        <h3>Configuración</h3>
-        <div style="margin-top:8px" class="muted">----------------------------------</div>
-        <div style="margin-top:10px">© MarckBusiness 2025 — iParking <span class="crown">👑</span></div>
-        <div style="height:8px"></div>
-        <button class="btn" id="btnResetTarifas">BUTTOM PROGRAM</button>
-      </section>
+    <div id="historyContent"></div>
 
-      <footer>© MarckBusiness 2025 — iParking <span class="crown">👑</span></footer>
-    </main>
+    <button style="margin-top:20px;width:100%;padding:12px;font-size:17px;font-weight:800;border-radius:10px;background:#1f2937;color:white;cursor:pointer"
+      onclick="closeHistoryModal()">
+      CERRAR
+    </button>
   </div>
+</div>
 
-  <script>
-    const STORAGE_KEY = 'parqueo_multicars_v1';
-    const USERS_KEY = 'parqueo_multicars_users_v1';
-    const CIERRES_KEY = 'parqueo_multicars_cierres_v1';
 
-    let registros = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    let users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    let cierres = JSON.parse(localStorage.getItem(CIERRES_KEY) || '[]');
 
-    const tarifas = [
-      {min:0,max:5,precio:0},{min:6,max:35,precio:5},{min:36,max:65,precio:8},{min:66,max:95,precio:13},
-      {min:96,max:125,precio:16},{min:126,max:155,precio:21},{min:156,max:185,precio:24},{min:186,max:215,precio:29},
-      {min:216,max:245,precio:32},{min:246,max:275,precio:37},{min:276,max:305,precio:40},{min:306,max:335,precio:45},
-      {min:336,max:365,precio:48},{min:366,max:395,precio:53},{min:396,max:425,precio:56},{min:426,max:455,precio:61},
-      {min:456,max:485,precio:64},{min:486,max:515,precio:69},{min:516,max:545,precio:72},{min:546,max:575,precio:77},
-      {min:576,max:605,precio:80},{min:606,max:635,precio:85},{min:636,max:665,precio:88}
-    ];
+<!-- =========================================
+     LOGIN
+========================================= -->
+<div id="login" class="login-wrap">
+  <div class="login-card">
 
-    function uid(p='id'){return p+'_'+Math.random().toString(36).slice(2,9)}
-    function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(registros)); localStorage.setItem(USERS_KEY, JSON.stringify(users)); localStorage.setItem(CIERRES_KEY, JSON.stringify(cierres)); }
+    <img src="logo" class="login-logo" onerror="this.onerror=null;this.src='logo.png';" />
 
-    function calcularPago(horaIngreso, horaSalida){
-      const entrada = new Date(horaIngreso), salida = new Date(horaSalida);
-      const minutos = Math.ceil((salida - entrada)/60000);
-      for(let t of tarifas) if(minutos>=t.min && minutos<=t.max) return t.precio;
-      return tarifas[tarifas.length-1].precio;
+    <h2>Ingreso al Sistema</h2>
+
+    <input id="user" class="input" placeholder="Usuario" />
+    <input id="pass" class="input" type="password" placeholder="Clave" />
+
+    <button id="btnLogin" class="control-btn" style="margin-top:12px;width:100%">Entrar</button>
+
+    <div style="text-align:center;margin-top:14px;color:var(--muted);font-size:13px">
+      Usuario: <b>CAJERO</b> — Clave: <b>123</b>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- =========================================
+     APP COMPLETA
+========================================= -->
+<div class="app" id="appRoot" style="display:none;">
+
+
+  <!-- ========================
+       SIDEBAR IZQUIERDO
+  ========================= -->
+  <div class="sidebar">
+
+    <div class="brand">Las Piconas - Punto de Venta V8</div>
+    <img src="logo" alt="logo" class="logo-preview" onerror="this.onerror=null;this.src='logo.png';" />
+
+
+    <!-- CANTIDAD + BORRAR ÚLTIMO -->
+    <div class="controls-row">
+      <input id="qty" class="qty" type="number" min="1" value="1" style="flex:1" />
+      <button id="btnDeleteLast" class="action-btn">Borrar</button>
+    </div>
+
+
+    <!-- CATEGORÍAS -->
+    <div style="margin-top:6px">
+      <div style="font-size:13px;color:var(--muted);padding:6px">Categorías</div>
+      <div class="categorias" id="categorias"></div>
+    </div>
+
+
+    <!-- PRODUCTOS -->
+    <div style="margin-top:16px">
+      <div style="font-size:13px;color:var(--muted);padding:6px">Productos</div>
+      <div class="products" id="products"></div>
+    </div>
+
+  </div> <!-- FIN SIDEBAR -->
+
+
+
+
+  <!-- ========================
+       PANEL CENTRAL
+  ========================= -->
+  <div class="center">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div style="font-weight:800;font-size:20px">Visor de Cliente</div>
+    </div>
+
+    <!-- ORDEN ACTUAL -->
+    <div class="current-order" id="currentOrder">Orden: AF000001</div>
+
+
+    <!-- VISOR -->
+    <div class="viewer" id="viewer"></div>
+
+
+
+    <!-- SELECCIÓN MÉTODO DE PAGO -->
+    <div class="pay-methods">
+      <button id="payCash" class="pay-btn active">EFECTIVO</button>
+      <button id="payCard" class="pay-btn">TARJETA</button>
+    </div>
+
+
+
+    <!-- CONTROLES -->
+    <div class="controls">
+      <button id="minus" class="action-btn">-</button>
+      <button id="plus" class="action-btn">+</button>
+      <button id="applyDiscount" class="action-btn">Descuento</button>
+
+      <button id="finalizar" class="control-btn">Cobrar</button>
+    </div>
+
+
+
+    <!-- TOTALES (ESTILO C) -->
+    <div class="totals-box">
+      <div class="total-row">
+        <span>Subtotal</span>
+        <span id="subtotal">Q0.00</span>
+      </div>
+
+      <div class="total-row">
+        <span>Descuento</span>
+        <span id="discount">Q0.00</span>
+      </div>
+
+      <div class="total-final">
+        TOTAL: <span id="total">Q0.00</span>
+      </div>
+    </div>
+
+
+  </div> <!-- FIN PANEL CENTRAL -->
+
+
+</div> <!-- FIN APP -->
+
+
+
+<!-- =========================================
+     INICIO DEL SCRIPT (PARTE 4 CONTINÚA)
+========================================= -->
+<script>
+/* ==========================================================
+      SISTEMA V8 - JAVASCRIPT ORDENADO (PARTE 1/2)
+========================================================== */
+
+
+/* ========================================
+   VARIABLES GLOBALES Y LOCALSTORAGE
+======================================== */
+
+let CATEGORIES = JSON.parse(localStorage.getItem('v8_categories') || '{}');
+let cart = JSON.parse(localStorage.getItem('v8_cart') || '[]');
+let discount = 0;
+
+let orderPrefix = localStorage.getItem('v8_order_prefix') || 'AF';
+let orderNumber = Number(localStorage.getItem('v8_order_number') || '1');
+
+let paymentMethod = "EFECTIVO";
+
+function saveCategories(){
+  localStorage.setItem('v8_categories', JSON.stringify(CATEGORIES));
+}
+
+function saveCart(){
+  localStorage.setItem('v8_cart', JSON.stringify(cart));
+}
+
+function saveOrderCounter(){
+  localStorage.setItem('v8_order_prefix', orderPrefix);
+  localStorage.setItem('v8_order_number', orderNumber);
+}
+
+
+/* ========================================
+   FORMATO
+======================================== */
+function fmt(q){
+  return "Q" + Number(q).toFixed(2);
+}
+
+
+
+/* ========================================
+   RENDER CATEGORÍAS
+======================================== */
+function renderCategories(){
+  const box = document.getElementById("categorias");
+  box.innerHTML = "";
+
+  Object.keys(CATEGORIES).forEach(cat => {
+    const b = document.createElement("button");
+    b.className = "cat-btn";
+    b.textContent = cat;
+
+    if(CATEGORIES[cat].color){
+      b.style.background = CATEGORIES[cat].color;
     }
 
-    function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+    b.onclick = () => showProducts(cat);
 
-    function actualizarTabla(){
-      const tbody = document.getElementById('registro'); tbody.innerHTML='';
-      registros.forEach((r,i)=>{
-        const tr=document.createElement('tr'); if(!r.horaSalida) tr.classList.add('active');
-        tr.innerHTML = `
-          <td>${escapeHtml(r.placa)}</td>
-          <td>${escapeHtml(r.marca)}</td>
-          <td>${new Date(r.horaIngreso).toLocaleString()}</td>
-          <td>${r.horaSalida?new Date(r.horaSalida).toLocaleString():'-'}</td>
-          <td>${r.total!=null?'Q'+Number(r.total).toFixed(2):'-'}</td>
-          <td>
-            ${r.horaSalida?'':`<button class="action-btn exit" data-idx="${i}" data-action="salir">Salir</button>
-            <button class="action-btn gym" data-idx="${i}" data-action="gym">GYM</button>`}
-            <button class="action-btn ticket" data-idx="${i}" data-action="ticket">Ticket</button>
-            <button class="action-btn delete" data-idx="${i}" data-action="delete">Eliminar</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-      save(); actualizarResumen(); renderHistorial(); renderCierresTable(); renderUsers();
+    box.appendChild(b);
+  });
+}
+
+
+
+/* ========================================
+   RENDER PRODUCTOS
+======================================== */
+function showProducts(cat){
+  const box = document.getElementById("products");
+  box.innerHTML = "";
+
+  const arr = CATEGORIES[cat].products || [];
+
+  arr.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "prod-card";
+
+    if(p.color){
+      card.style.background = p.color;
+    } else {
+      card.style.background = CATEGORIES[cat].color || "#1f2937";
     }
 
-    document.getElementById('btnIngresar').addEventListener('click',()=>{
-      const placaEl=document.getElementById('placa'), marcaEl=document.getElementById('marca');
-      const placa=(placaEl.value||'').trim(), marca=(marcaEl.value||'').trim();
-      if(!placa||!marca) return alert('Ingrese placa y marca');
-      const hora=new Date().toISOString();
-      registros.push({id:uid('r'),placa,marca,horaIngreso:hora,horaSalida:null,total:null});
-      placaEl.value='';marcaEl.value='';placaEl.focus();
-      imprimirTicket(placa,marca,hora);
-      actualizarTabla();
+    card.innerHTML = `
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-price">${fmt(p.price)}</div>
+    `;
+
+    card.onclick = () => addToCart(p);
+
+    box.appendChild(card);
+  });
+}
+
+
+
+/* ========================================
+   AGREGAR PRODUCTO AL CARRITO
+======================================== */
+function addToCart(p){
+  const qty = Number(document.getElementById("qty").value) || 1;
+
+  const found = cart.find(item => item.name === p.name && item.price === p.price);
+
+  if(found){
+    found.qty += qty;
+  } else {
+    cart.push({
+      name: p.name,
+      price: p.price,
+      qty: qty,
+      comment: ""
     });
+  }
 
-    document.getElementById('btnGym').addEventListener('click',()=>{
-      const placaEl=document.getElementById('placa'), marcaEl=document.getElementById('marca');
-      const placa=(placaEl.value||'').trim(), marca=(marcaEl.value||'').trim();
-      if(!placa||!marca) return alert('Ingrese placa y marca');
-      const hora=new Date().toISOString();
-      const rec={id:uid('r'),placa,marca,horaIngreso:hora,horaSalida:new Date().toISOString(),total:0};
-      registros.push(rec); placaEl.value='';marcaEl.value='';
-      imprimirFacturaGYM(rec); actualizarTabla();
-    });
+  saveCart();
+  renderViewer();
+}
 
-    document.getElementById('registro').addEventListener('click',(e)=>{
-      const btn=e.target.closest('button'); if(!btn) return;
-      const idx=Number(btn.dataset.idx), action=btn.dataset.action;
-      if(action==='salir') sacarVehiculo(idx);
-      if(action==='gym') marcarGYM(idx);
-      if(action==='ticket') imprimirTicketFromIndex(idx);
-      if(action==='delete') { if(confirm('Eliminar registro?')) { registros.splice(idx,1); actualizarTabla(); } }
-    });
 
-    function sacarVehiculo(index){
-      if(!registros[index]) return;
-      const salida=new Date().toISOString();
-      registros[index].horaSalida=salida;
-      registros[index].total=calcularPago(registros[index].horaIngreso,salida);
-      imprimirFactura(registros[index]); actualizarTabla();
+
+/* ========================================
+   RENDER VIEWER DEL CARRITO
+======================================== */
+function renderViewer(){
+  const v = document.getElementById("viewer");
+  v.innerHTML = "";
+
+  cart.forEach((it, index) => {
+
+    const row = document.createElement("div");
+    row.className = "item-row";
+
+    const left = document.createElement("div");
+    left.style.flex = "1";
+
+    left.innerHTML = `
+      <div style="font-weight:800;font-size:18px">${it.qty} x ${it.name}</div>
+    `;
+
+    const commentInput = document.createElement("input");
+    commentInput.className = "comment-input";
+    commentInput.placeholder = "Comentario (opcional)";
+    commentInput.value = it.comment || "";
+
+    commentInput.oninput = (e)=>{
+      it.comment = e.target.value;
+      saveCart();
+    };
+
+    left.appendChild(commentInput);
+
+
+    const right = document.createElement("div");
+    right.style.width = "160px";
+    right.style.textAlign = "right";
+
+    right.innerHTML = `
+      ${fmt(it.price * it.qty)}
+      <div style="margin-top:8px;display:flex;gap:6px;justify-content:flex-end">
+        <button class="action-btn" onclick="minusItem(${index})">-</button>
+        <button class="action-btn" onclick="plusItem(${index})">+</button>
+        <button class="action-btn" style="background:#e74c3c" onclick="deleteItem(${index})">X</button>
+      </div>
+    `;
+
+    row.appendChild(left);
+    row.appendChild(right);
+
+    v.appendChild(row);
+  });
+
+  recalcTotals();
+}
+
+
+
+/* ========================================
+   OPERACIONES DEL CARRITO
+======================================== */
+
+function minusItem(i){
+  if(cart[i].qty > 1){
+    cart[i].qty--;
+  } else {
+    cart.splice(i,1);
+  }
+  saveCart();
+  renderViewer();
+}
+
+function plusItem(i){
+  cart[i].qty++;
+  saveCart();
+  renderViewer();
+}
+
+function deleteItem(i){
+  cart.splice(i,1);
+  saveCart();
+  renderViewer();
+}
+
+
+
+/* ========================================
+   RECALCULAR TOTALES
+======================================== */
+function recalcTotals(){
+  const subtotal = cart.reduce((s,i)=> s + i.qty*i.price, 0);
+  const total = Math.max(0, subtotal - discount);
+
+  document.getElementById("subtotal").textContent = fmt(subtotal);
+  document.getElementById("discount").textContent = fmt(discount);
+  document.getElementById("total").textContent = fmt(total);
+}
+
+
+
+/* ========================================
+   MÉTODO DE PAGO
+======================================== */
+document.getElementById("payCash").onclick = ()=>{
+  paymentMethod = "EFECTIVO";
+  document.getElementById("payCash").classList.add("active");
+  document.getElementById("payCard").classList.remove("active");
+};
+
+document.getElementById("payCard").onclick = ()=>{
+  paymentMethod = "TARJETA";
+  document.getElementById("payCard").classList.add("active");
+  document.getElementById("payCash").classList.remove("active");
+};
+
+
+
+/* ========================================
+   MODIFICAR CANTIDAD DESDE BOTONES
+======================================== */
+document.getElementById("plus").onclick = ()=>{
+  document.getElementById("qty").stepUp();
+};
+
+document.getElementById("minus").onclick = ()=>{
+  document.getElementById("qty").stepDown();
+};
+
+
+
+/* ========================================
+   DESCUENTO
+======================================== */
+document.getElementById("applyDiscount").onclick = ()=>{
+  const d = parseFloat(prompt("Descuento en Q:", discount));
+  if(!isNaN(d)){
+    discount = d;
+    recalcTotals();
+  }
+};
+
+
+
+/* ========================================
+   BORRAR ÚLTIMO
+======================================== */
+document.getElementById("btnDeleteLast").onclick = ()=>{
+  if(cart.length > 0){
+    cart.pop();
+    saveCart();
+    renderViewer();
+  }
+};
+
+
+
+/* ========================================
+   CAMBIAR PREFIJO DE ORDEN (A-Z)
+   CAMBIAR NÚMERO (000001 - etc)
+======================================== */
+
+function updateOrderLabel(){
+  const padded = String(orderNumber).padStart(6,'0');
+  document.getElementById("currentOrder").textContent =
+    "Orden: " + orderPrefix + padded;
+}
+
+function openChangeOrderPrefix(){
+  const pref = prompt("Prefijo de orden (letras):", orderPrefix);
+  if(!pref) return;
+
+  const num = prompt("Número inicial:", orderNumber);
+  if(!num) return;
+
+  if(isNaN(Number(num))){
+    alert("Número inválido.");
+    return;
+  }
+
+  orderPrefix = pref.toUpperCase();
+  orderNumber = Number(num);
+  saveOrderCounter();
+  updateOrderLabel();
+}
+
+
+
+/* ========================================
+   ADMIN MENU (desde el menú hamburguesa)
+======================================== */
+
+function toggleMenu(){
+  const m = document.getElementById("menuLateral");
+  m.style.left = (m.style.left === "0px") ? "-280px" : "0px";
+}
+
+document.getElementById("menuHamburguesa").onclick = toggleMenu;
+
+
+document.querySelectorAll("#menuLateral a").forEach(a=>{
+  a.onclick = (e)=>{
+    e.preventDefault();
+    toggleMenu();
+
+    const act = a.dataset.action;
+
+    // autenticación ADMIN
+    const code = prompt("Clave admin:");
+    if(code !== "22782522"){
+      alert("Clave incorrecta");
+      return;
     }
 
-    function marcarGYM(index){
-      if(!registros[index]) return;
-      registros[index].horaSalida=new Date().toISOString();
-      registros[index].total=0;
-      imprimirFacturaGYM(registros[index]); actualizarTabla();
+    if(act === "addCat")   adminAddCategory();
+    if(act === "editCat")  adminEditCategory();
+    if(act === "delCat")   adminDeleteCategory();
+
+    if(act === "addProd")  adminAddProduct();
+    if(act === "editProd") adminEditProduct();
+    if(act === "delProd")  adminDeleteProduct();
+
+    if(act === "openHistory") openHistoryModal();
+    if(act === "changeOrderPrefix") openChangeOrderPrefix();
+  };
+});
+
+
+
+/* ========================================
+   FUNCIONES ADMIN (CRUD)
+======================================== */
+
+function adminAddCategory(){
+  const name = prompt("Nombre nueva categoría:");
+  if(!name) return;
+  if(CATEGORIES[name]){
+    alert("Ya existe.");
+    return;
+  }
+
+  const color = prompt("Color HEX (ej: #ff6b35):", "#1f2937");
+
+  CATEGORIES[name] = {
+    color: color,
+    products: []
+  };
+
+  saveCategories();
+  renderCategories();
+}
+
+function adminEditCategory(){
+  const name = prompt("Nombre categoría a modificar:");
+  if(!name || !CATEGORIES[name]){
+    alert("No existe.");
+    return;
+  }
+
+  const newName = prompt("Nuevo nombre:", name);
+  if(!newName) return;
+
+  const color = prompt("Nuevo color HEX:", CATEGORIES[name].color);
+
+  CATEGORIES[newName] = {
+    color: color,
+    products: CATEGORIES[name].products
+  };
+
+  if(newName !== name){
+    delete CATEGORIES[name];
+  }
+
+  saveCategories();
+  renderCategories();
+}
+
+function adminDeleteCategory(){
+  const name = prompt("Categoría a eliminar:");
+  if(!name || !CATEGORIES[name]) return;
+
+  if(!confirm("¿Eliminar categoría y productos?")) return;
+
+  delete CATEGORIES[name];
+
+  saveCategories();
+  renderCategories();
+  document.getElementById("products").innerHTML = "";
+}
+
+function adminAddProduct(){
+  const cat = prompt("Categoría:");
+  if(!cat || !CATEGORIES[cat]){
+    alert("No existe categoría.");
+    return;
+  }
+
+  const name = prompt("Nombre producto:");
+  if(!name) return;
+
+  const price = parseFloat(prompt("Precio:"));
+  if(isNaN(price)){
+    alert("Precio inválido.");
+    return;
+  }
+
+  const color = CATEGORIES[cat].color || "#1f2937";
+
+  CATEGORIES[cat].products.push({
+    name, price, color
+  });
+
+  saveCategories();
+  showProducts(cat);
+}
+
+function adminEditProduct(){
+  const cat = prompt("Categoría:");
+  if(!cat || !CATEGORIES[cat]){
+    alert("No existe categoría.");
+    return;
+  }
+
+  const name = prompt("Producto a modificar:");
+  const prod = CATEGORIES[cat].products.find(p => p.name === name);
+
+  if(!prod){
+    alert("Producto no encontrado.");
+    return;
+  }
+
+  const newName = prompt("Nuevo nombre:", prod.name);
+  const newPrice = parseFloat(prompt("Nuevo precio:", prod.price));
+
+  if(isNaN(newPrice)){
+    alert("Precio inválido.");
+    return;
+  }
+
+  prod.name = newName;
+  prod.price = newPrice;
+
+  saveCategories();
+  showProducts(cat);
+}
+
+function adminDeleteProduct(){
+  const cat = prompt("Categoría:");
+  if(!cat || !CATEGORIES[cat]){
+    alert("No existe categoría.");
+    return;
+  }
+
+  const name = prompt("Producto a eliminar:");
+  const arr = CATEGORIES[cat].products;
+  const idx = arr.findIndex(p=>p.name===name);
+
+  if(idx === -1){
+    alert("No encontrado.");
+    return;
+  }
+
+  arr.splice(idx,1);
+
+  saveCategories();
+  showProducts(cat);
+}
+
+
+
+/* ========================================
+   HISTORIAL (solo modal)
+======================================== */
+
+function openHistoryModal(){
+  renderHistoryModal();
+  document.getElementById("historyModal").style.display = "flex";
+}
+
+function closeHistoryModal(){
+  document.getElementById("historyModal").style.display = "none";
+}
+
+function renderHistoryModal(){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const box = document.getElementById("historyContent");
+  box.innerHTML = "";
+
+  if(hist.length === 0){
+    box.innerHTML = `<div class="history-item">No hay ventas aún.</div>`;
+    return;
+  }
+
+  hist.slice().reverse().forEach(sale => {
+
+    const div = document.createElement("div");
+    div.className = "history-item";
+
+    div.innerHTML = `
+      <b>${sale.orderLabel}</b> — ${fmt(sale.total)}<br>
+      <span style="font-size:13px;color:#9aa4b2">${sale.dateFormatted}</span>
+      <br>
+      <button class="action-btn" style="margin-top:8px" onclick='reprintSale("${sale.id}")'>Reimprimir</button>
+      <button class="action-btn" style="margin-top:8px" onclick='reprintKitchen("${sale.id}")'>Cocina</button>
+    `;
+
+    box.appendChild(div);
+  });
+}
+
+
+
+/* ========================================
+   LOGIN
+======================================== */
+
+document.getElementById("btnLogin").onclick = ()=>{
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value.trim();
+
+  if(u === "CAJERO" && p === "123"){
+    document.getElementById("login").style.display = "none";
+    document.getElementById("appRoot").style.display = "grid";
+    document.getElementById("btnCobrarTop").style.display = "block";
+
+    updateOrderLabel();
+    renderCategories();
+    renderViewer();
+  } else {
+    alert("Usuario o clave incorrecta");
+  }
+};
+/* ==========================================================
+      SISTEMA V8 - JAVASCRIPT ORDENADO (PARTE 2/2)
+========================================================== */
+
+
+/* ========================================
+   GUARDAR VENTA
+======================================== */
+function saveSale(sale){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  hist.push(sale);
+  localStorage.setItem('v8_sales', JSON.stringify(hist));
+}
+
+
+
+/* ========================================
+   CREAR OBJETO DE VENTA
+======================================== */
+function buildSaleObject(){
+  const id = orderPrefix + String(orderNumber).padStart(6,'0');
+  const date = new Date();
+  const dateFormatted = date.toLocaleString();
+
+  const subtotal = cart.reduce((s,i)=> s + i.qty*i.price, 0);
+  const total = Math.max(0, subtotal - discount);
+
+  return {
+    id,
+    orderLabel: id,
+    date: date.toISOString(),
+    dateFormatted,
+    items: cart.map(i=>({
+      name:i.name,
+      qty:i.qty,
+      price:i.price,
+      comment:i.comment || ""
+    })),
+    subtotal,
+    discount,
+    total,
+    payment: paymentMethod
+  };
+}
+
+
+
+/* ========================================
+   GENERAR HTML PARA IMPRESIÓN CLIENTE
+======================================== */
+function buildClientHTML(s){
+  return `
+  <!doctype html>
+  <html><head><meta charset="utf-8">
+  <style>
+    body{ font-family:Arial; margin:0; padding:6px; }
+    @page{ size:80mm auto; margin:3mm; }
+    .ticket{ width:76mm; }
+    h2{ text-align:center; margin:4px 0 6px; font-size:20px; }
+    table{ width:100%; font-size:15px; }
+  </style>
+  </head>
+  <body onload="setTimeout(()=>window.print(),200)">
+    <div class="ticket">
+      <h2>LAS PICONAS</h2>
+      <div style="text-align:center">${s.dateFormatted}</div>
+      <div style="text-align:center;font-size:22px;font-weight:900;margin:8px 0">
+        ORDEN ${s.orderLabel}
+      </div>
+
+      <table>
+        <tbody>
+          ${s.items.map(it=>`
+            <tr>
+              <td>${it.qty} x ${it.name}
+                ${it.comment? `<div style='font-size:12px;color:#333'>(${it.comment})</div>` :""}
+              </td>
+              <td style="text-align:right">${fmt(it.qty*it.price)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+
+      <br>
+      <div><b>Subtotal:</b> ${fmt(s.subtotal)}</div>
+      <div><b>Descuento:</b> ${fmt(s.discount)}</div>
+      <div style="font-size:20px;font-weight:900;margin-top:6px">
+        TOTAL: ${fmt(s.total)}
+      </div>
+
+      <div style="margin-top:8px;font-size:14px">
+        Pago: ${s.payment}
+      </div>
+
+      <div style="text-align:center;margin-top:8px;font-size:13px">
+        Gracias por su compra
+      </div>
+    </div>
+  </body></html>`;
+}
+
+
+
+/* ========================================
+   GENERAR HTML PARA IMPRESIÓN COCINA
+======================================== */
+function buildKitchenHTML(s){
+  return `
+  <!doctype html>
+  <html><head><meta charset="utf-8">
+  <style>
+    body{ font-family:Arial; margin:0; padding:6px; }
+    @page{ size:80mm auto; margin:3mm; }
+    .ticket{ width:76mm; font-size:18px; }
+  </style>
+  </head>
+  <body onload="setTimeout(()=>window.print(),200)">
+    <div class="ticket">
+      <h2 style="text-align:center;margin:4px 0 10px;font-size:22px;">COCINA</h2>
+
+      <div style="text-align:center;font-size:20px;font-weight:900;margin-bottom:6px">
+        ORDEN ${s.orderLabel}
+      </div>
+
+      ${s.items.map(it=>`
+        <div style="margin-bottom:10px">
+          <b>${it.qty} x ${it.name}</b>
+          ${it.comment? `<div style='font-size:15px;color:#b00;margin-left:6px'>(${it.comment})</div>`:""}
+        </div>
+      `).join("")}
+
+      <div style="text-align:center;margin-top:10px;font-size:14px">--- FIN ---</div>
+    </div>
+  </body></html>`;
+}
+
+
+
+/* ========================================
+   IMPRIMIR TICKET CLIENTE
+======================================== */
+function reprintSale(id){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const sale = hist.find(x=>x.id===id);
+  if(!sale){ alert("No encontrado"); return; }
+
+  const html = buildClientHTML(sale);
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
+}
+
+
+
+/* ========================================
+   IMPRIMIR TICKET COCINA
+======================================== */
+function reprintKitchen(id){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const sale = hist.find(x=>x.id===id);
+  if(!sale){ alert("No encontrado"); return; }
+
+  const html = buildKitchenHTML(sale);
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
+}
+
+
+
+/* ========================================
+   FINALIZAR VENTA
+======================================== */
+document.getElementById("finalizar").onclick =
+document.getElementById("btnCobrarTop").onclick = ()=>{
+
+  if(cart.length === 0){
+    alert("No hay productos.");
+    return;
+  }
+
+  const sale = buildSaleObject();
+  saveSale(sale);
+
+  // imprimir CLIENTE
+  const htmlClient = buildClientHTML(sale);
+  const win1 = window.open("", "_blank", "width=420,height=720");
+  win1.document.write(htmlClient);
+  win1.document.close();
+
+  // imprimir COCINA
+  const htmlKitchen = buildKitchenHTML(sale);
+  const win2 = window.open("", "_blank", "width=420,height=720");
+  win2.document.write(htmlKitchen);
+  win2.document.close();
+
+  // reset
+  cart = [];
+  discount = 0;
+  orderNumber++;
+
+  saveCart();
+  saveOrderCounter();
+
+  renderViewer();
+  updateOrderLabel();
+
+  alert("Venta registrada e impresiones enviadas.");
+};
+
+
+
+/* ========================================
+   CIERRE DE TURNO
+======================================== */
+function closeShift(){
+  const code = prompt("Código de cierre:");
+  if(code !== "22782522"){
+    alert("Incorrecto");
+    return;
+  }
+
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  if(hist.length === 0){
+    alert("No hay ventas.");
+    return;
+  }
+
+  let totalEfectivo = 0;
+  let totalTarjeta = 0;
+  let totalGeneral = 0;
+
+  hist.forEach(s=>{
+    if(s.payment === "EFECTIVO"){
+      totalEfectivo += s.total;
+    } else {
+      totalTarjeta += s.total;
     }
+    totalGeneral += s.total;
+  });
 
-    function imprimirTicketFromIndex(index){
-      const r=registros[index]; if(!r) return; imprimirTicket(r.placa,r.marca,r.horaIngreso);
-    }
+  const html = `
+  <!doctype html>
+  <html><head><meta charset="utf-8">
+  <style>
+    body{ font-family:Arial; padding:6px; }
+    @page{ size:80mm auto; margin:3mm; }
+  </style>
+  </head>
+  <body onload="setTimeout(()=>window.print(),200)">
+    <h3 style="text-align:center;margin:4px 0 6px">CIERRE DE TURNO</h3>
+    <div>Total Efectivo: Q${totalEfectivo.toFixed(2)}</div>
+    <div>Total Tarjeta: Q${totalTarjeta.toFixed(2)}</div>
+    <hr>
+    <div><b>Total General: Q${totalGeneral.toFixed(2)}</b></div>
+    <br>
+    <div style="font-size:12px">Ventas incluidas:</div>
+    ${hist.map(s=> `${s.orderLabel} - ${fmt(s.total)}<br>` ).join("")}
+  </body></html>
+  `;
 
-    function imprimirHTMLWindow(html){
-      const w=window.open('','_blank','width=380,height=640'); if(!w){alert('Permite popups en el navegador.');return}
-      w.document.write(html); w.document.close(); setTimeout(()=>w.print(),500);
-    }
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
 
-    const TICKET_IMG='IMAGEN1.png';
+  // limpiar historial
+  localStorage.setItem('v8_sales', JSON.stringify([]));
+  alert("Cierre realizado.");
+}
 
-    function createBarcodeDataUrl(text){
-      const canvas=document.createElement('canvas'); JsBarcode(canvas,text,{format:'code128',displayValue:false,height:40,margin:6});
-      return canvas.toDataURL('image/png');
-    }
 
-    function imprimirTicket(placa,marca,hora){
-      const fecha=new Date(hora); const fechaStr=fecha.toLocaleDateString(); const horaStr=fecha.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-      const barcodeData=createBarcodeDataUrl(placa);
-      const html=`<html><head><meta charset="utf-8"><title>Ticket</title><style>body{font-family:monospace;text-align:center;padding:10px;color:#000}.line{border-top:1px dashed #000;margin:10px 0}.big{font-size:18pt;font-weight:700}img.logo{max-width:220px;height:auto}</style></head><body>
-      <img src="${TICKET_IMG}" class="logo"/><div class="line"></div><div>FECHA</div><div>${fechaStr}</div><div class="line"></div>
-      <div>HORA DE INGRESO</div><div class="big">${horaStr}</div><div class="line"></div>
-      <div>PLACA</div><div class="big">${escapeHtml(placa)}</div><div class="line"></div>
-      <div>MARCA</div><div class="big">${escapeHtml(marca)}</div><div class="line"></div>
-      <div><img src="${barcodeData}" class="barcode-img"/></div><div class="line"></div><pre>Gracias por su visita\n*RECUERDE NO PERDER SU TICKET*</pre></body></html>`;
-      imprimirHTMLWindow(html);
-    }
 
-    function imprimirFactura(d){
-      const entrada=new Date(d.horaIngreso), salida=new Date(d.horaSalida), tiempo=Math.ceil((salida-entrada)/60000);
-      const barcodeData=createBarcodeDataUrl(d.placa);
-      const html=`<html><head><meta charset="utf-8"><title>Factura</title><style>body{font-family:monospace;text-align:center;padding:10px;color:#000}.line{border-top:1px dashed #000;margin:10px 0}.big{font-size:18pt;font-weight:700}img.logo{max-width:220px;height:auto}</style></head><body>
-      <img src="${TICKET_IMG}" class="logo"/><div class="line"></div><div>FACTURA VEHÍCULO</div><div class="line"></div>
-      <div>PLACA</div><div class="big">${escapeHtml(d.placa)}</div><div class="line"></div>
-      <div>MARCA</div><div class="big">${escapeHtml(d.marca)}</div><div class="line"></div>
-      <div>ENTRADA</div><div>${entrada.toLocaleString()}</div><div class="line"></div>
-      <div>SALIDA</div><div>${salida.toLocaleString()}</div><div class="line"></div>
-      <div>TIEMPO TOTAL</div><div class="big">${tiempo} minutos</div><div class="line"></div>
-      <div>TOTAL A PAGAR</div><div class="big">Q${Number(d.total).toFixed(2)}</div><div class="line"></div>
-      <div><img src="${barcodeData}" class="barcode-img"/></div><div class="line"></div><pre>Gracias por su visita</pre></body></html>`;
-      imprimirHTMLWindow(html);
-    }
+/* ========================================
+   ESCUCHAR STORAGE (multiventana)
+======================================== */
+window.addEventListener("storage", ev=>{
+  if(ev.key === "v8_categories"){
+    CATEGORIES = JSON.parse(ev.newValue || '{}');
+    renderCategories();
+  }
+  if(ev.key === "v8_cart"){
+    cart = JSON.parse(ev.newValue || '[]');
+    renderViewer();
+  }
+  if(ev.key === "v8_order_prefix" || ev.key==="v8_order_number"){
+    orderPrefix = localStorage.getItem('v8_order_prefix') || orderPrefix;
+    orderNumber = Number(localStorage.getItem('v8_order_number') || orderNumber);
+    updateOrderLabel();
+  }
+});
 
-    function imprimirFacturaGYM(d){
-      const entrada=new Date(d.horaIngreso), salida=new Date(d.horaSalida), tiempo=Math.ceil((salida-entrada)/60000);
-      const barcodeData=createBarcodeDataUrl(d.placa);
-      const html=`<html><head><meta charset="utf-8"><title>Factura GYM</title><style>body{font-family:monospace;text-align:center;padding:10px;color:#000}.line{border-top:1px dashed #000;margin:10px 0}.big{font-size:18pt;font-weight:700;color:#18833a}img.logo{max-width:220px;height:auto}</style></head><body>
-      <img src="${TICKET_IMG}" class="logo"/><div class="line"></div><div>FACTURA VEHÍCULO GYM 💪</div><div class="line"></div>
-      <div>PLACA</div><div class="big">${escapeHtml(d.placa)}</div><div class="line"></div>
-      <div>MARCA</div><div class="big">${escapeHtml(d.marca)}</div><div class="line"></div>
-      <div>ENTRADA</div><div>${entrada.toLocaleString()}</div><div class="line"></div>
-      <div>SALIDA</div><div>${salida.toLocaleString()}</div><div class="line"></div>
-      <div>TIEMPO TOTAL</div><div class="big">${tiempo} minutos</div><div class="line"></div>
-      <div>TOTAL A PAGAR</div><div class="big">Q0.00</div><div class="line"></div>
-      <div><img src="${barcodeData}" class="barcode-img"/></div><div class="line"></div><pre>Gracias por su visita\nPARQUEO PARA GYM</pre></body></html>`;
-      imprimirHTMLWindow(html);
-    }
 
-    function actualizarResumen(){
-      const activos=registros.filter(r=>!r.horaSalida).length;
-      const total=registros.reduce((s,r)=>s+(r.total||0),0);
-      const hoy=registros.filter(r=>new Date(r.horaIngreso).toDateString()===new Date().toDateString()).length;
-      document.getElementById('statActivos').innerText=activos;
-      document.getElementById('statTotal').innerText='Q'+total.toFixed(2);
-      document.getElementById('statEntradas').innerText=hoy;
-      renderChart();
-    }
 
-    let chartInstance=null;
-    function renderChart(){
-      const ctx=document.getElementById('chart').getContext('2d');
-      const buckets={}; registros.forEach(r=>{const h=new Date(r.horaIngreso).getHours(); buckets[h]=(buckets[h]||0)+1});
-      const labels=Array.from({length:24},(_,i)=>String(i).padStart(2,'0')+':00');
-      const data=labels.map(l=>buckets[Number(l.slice(0,2))]||0);
-      if(chartInstance) chartInstance.destroy();
-      chartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Entradas por hora',data,backgroundColor:'rgba(6,182,212,0.85)'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
-    }
+/* ========================================
+   INICIALIZACIÓN
+======================================== */
+function init(){
+  updateOrderLabel();
+  renderCategories();
+  renderViewer();
+}
 
-    function renderHistorial(){
-      const tbody=document.getElementById('historial'); tbody.innerHTML='';
-      registros.forEach((r,i)=>{const minutos=r.horaSalida?Math.ceil((new Date(r.horaSalida)-new Date(r.horaIngreso))/60000):'-'; const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(r.placa)}</td><td>${escapeHtml(r.marca)}</td><td>${new Date(r.horaIngreso).toLocaleString()}</td><td>${r.horaSalida?new Date(r.horaSalida).toLocaleString():'-'}</td><td>${minutos}</td><td>${r.total!=null?'Q'+Number(r.total).toFixed(2):'-'}</td><td><button class="btn" data-idx="${i}" data-action="view">Ver</button></td>`; tbody.appendChild(tr);
-      });
-    }
+init();
 
-    function renderUsers(){
-      const ul=document.getElementById('usersList'); if(!ul) return; ul.innerHTML='';
-      users.forEach((u,idx)=>{ const li=document.createElement('li'); li.innerHTML=`<div><strong>${escapeHtml(u.name)}</strong><div class="muted">${escapeHtml(u.role)}</div></div><div><button class="btn" data-idx="${idx}" data-action="edit">✏️</button><button class="btn" data-idx="${idx}" data-action="del">🗑️</button></div>`; ul.appendChild(li); });
-    }
 
-    document.getElementById('btnAddUser')?.addEventListener('click',()=>{
-      const n=document.getElementById('u_name').value.trim(); const r=document.getElementById('u_role').value.trim();
-      if(!n||!r) return alert('Nombre y rol'); users.push({id:uid('u'),name:n,role:r}); document.getElementById('u_name').value=''; document.getElementById('u_role').value=''; save(); renderUsers();
-    });
+</script>
 
-    document.getElementById('usersList')?.addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; const idx=Number(b.dataset.idx); const action=b.dataset.action; if(action==='del'){ if(confirm('Eliminar usuario?')){ users.splice(idx,1); save(); renderUsers(); } } if(action==='edit'){ const u=users[idx]; const name=prompt('Editar nombre',u.name); const role=prompt('Editar rol',u.role); if(name&&role){ users[idx].name=name; users[idx].role=role; save(); renderUsers(); } } });
-
-    document.getElementById('exportJSON')?.addEventListener('click',()=>{
-      const blob=new Blob([JSON.stringify(registros,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='parqueo_backup_'+(new Date()).toISOString().slice(0,10)+'.json'; a.click();
-    });
-
-    document.getElementById('importJSONBtn')?.addEventListener('click',()=>document.getElementById('fileImport').click());
-    document.getElementById('fileImport')?.addEventListener('change',(e)=>{
-      const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const data=JSON.parse(r.result); if(!Array.isArray(data)) return alert('Archivo inválido'); if(confirm('Reemplazar registros actuales? (Aceptar = reemplazar)')) registros=data; else registros=registros.concat(data); save(); actualizarTabla(); alert('Importado'); }catch(err){alert('Error al leer archivo');} }; r.readAsText(f);
-    });
-
-    document.getElementById('btnExportXLS')?.addEventListener('click', exportXLSX);
-    document.getElementById('iconExportXLS')?.addEventListener('click', exportXLSX);
-
-    document.getElementById('btnExportVisualXLS')?.addEventListener('click', exportVisualXLS);
-    document.getElementById('iconPrint')?.addEventListener('click',()=>document.getElementById('btnPrintSummary').click());
-
-    document.getElementById('btnPrintSummary')?.addEventListener('click', ()=>{
-      const total=registros.reduce((s,r)=>s+(r.total||0),0);
-      const w=window.open('','_blank'); if(!w){alert('Permite popups.');return} w.document.write(`<html><body style="font-family:monospace;text-align:center"><h2>CIERRE DE TURNO</h2><pre>TOTAL: Q${total.toFixed(2)}</pre></body></html>`); w.document.close(); setTimeout(()=>w.print(),300);
-    });
-
-    document.getElementById('btnClearAll')?.addEventListener('click',()=>{ if(!confirm('Borrar todos los registros?')) return; registros=[]; save(); actualizarTabla(); });
-
-    document.getElementById('iconClear')?.addEventListener('click',()=>document.getElementById('btnClearAll').click());
-
-    document.getElementById('search').addEventListener('input',function(){
-      const q=this.value.trim().toLowerCase(); const tbody=document.getElementById('registro');
-      Array.from(tbody.children).forEach(tr=>{ const placa=(tr.children[0]?.innerText||'').toLowerCase(); const marca=(tr.children[1]?.innerText||'').toLowerCase(); tr.style.display=(placa.includes(q)||marca.includes(q))?'':'none'; });
-    });
-
-    document.getElementById('menu').addEventListener('click',(e)=>{const b=e.target.closest('button'); if(!b) return; document.querySelectorAll('#menu button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); const view=b.dataset.view; document.querySelectorAll('.view').forEach(v=>v.style.display=(v.id==='view-'+view)?'':'none'); });
-
-    document.getElementById('btnResetTarifas')?.addEventListener('click',()=>{ if(confirm('Restaurar tarifas originales (no modifica registros)?')) alert('Tarifas originales mantenidas.'); });
-
-    document.getElementById('btnIngresar').addEventListener('keyup',(e)=>{if(e.key==='Enter') document.getElementById('btnIngresar').click()});
-
-    // CIERRES: generar, listar, exportar
-    document.getElementById('btnGenerarCierre')?.addEventListener('click', ()=> {
-      if (registros.length === 0) return alert('No hay registros para cerrar.');
-      const total = registros.reduce((s,r)=>s + (r.total || 0),0);
-      const cantidad = registros.length;
-      const cierre = { id: uid('c'), fecha: new Date().toLocaleString(), cantidad, total: Number(total).toFixed(2) };
-      cierres.push(cierre);
-      registros = [];
-      save();
-      actualizarTabla();
-      alert(`Cierre generado. Total Q${cierre.total}`);
-    });
-
-    function renderCierresTable(){
-      const tbody = document.getElementById('cierresTable'); if(!tbody) return; tbody.innerHTML = '';
-      cierres.forEach((c,i)=>{ const tr = document.createElement('tr'); tr.innerHTML = `<td>${i+1}</td><td>${c.fecha}</td><td>${c.cantidad}</td><td>Q${c.total}</td><td><button class="btn" data-idx="${i}" data-action="view">Ver</button> <button class="btn" data-idx="${i}" data-action="del">Eliminar</button></td>`; tbody.appendChild(tr); });
-    }
-
-    document.getElementById('cierresTable')?.addEventListener('click',(e)=>{ const b=e.target.closest('button'); if(!b) return; const idx=Number(b.dataset.idx); const action=b.dataset.action; if(action==='view'){ const c=cierres[idx]; alert(`Fecha: ${c.fecha}\nCantidad: ${c.cantidad}\nTotal: Q${c.total}`) } if(action==='del'){ if(confirm('Eliminar cierre?')){ cierres.splice(idx,1); save(); renderCierresTable(); } } });
-
-    // EXPORT .xlsx usando SheetJS (datos puros, .xlsx descargable)
-    function exportXLSX(){
-      try {
-        const wb = XLSX.utils.book_new();
-        const title = 'PARQUEO MULTICARS - Registros';
-        const fecha = new Date().toLocaleString();
-        const ws_data = [['Placa','Marca','Ingreso','Salida','Minutos','Total Q']];
-        registros.forEach(r=>{
-          const minutos = r.horaSalida ? Math.ceil((new Date(r.horaSalida)-new Date(r.horaIngreso))/60000) : '';
-          ws_data.push([r.placa, r.marca, new Date(r.horaIngreso).toLocaleString(), r.horaSalida?new Date(r.horaSalida).toLocaleString():'', minutos, r.total!=null?Number(r.total).toFixed(2):'']);
-        });
-        const ws = XLSX.utils.aoa_to_sheet(ws_data);
-        XLSX.utils.book_append_sheet(wb, ws, 'Registros');
-        // agregar hoja resumen
-        const resumen = [['Reporte', title], ['Fecha', fecha], ['Total registros', registros.length], ['Total recaudado', registros.reduce((s,r)=>s+(r.total||0),0)]];
-        const ws2 = XLSX.utils.aoa_to_sheet(resumen);
-        XLSX.utils.book_append_sheet(wb, ws2, 'Resumen');
-        XLSX.writeFile(wb, 'parqueo_multicars_registros_'+(new Date()).toISOString().slice(0,10)+'.xlsx');
-      } catch(err){ console.error(err); alert('Error creando .xlsx'); }
-    }
-
-    // Export visual (.xls) con logo embebido como HTML (para abrir en Excel y ver logo)
-    function exportVisualXLS(){
-      fetch('IMAGEN1.png').then(r=>r.blob()).then(blob=>{
-        const fr = new FileReader();
-        fr.onloadend = () => {
-          const imgData = fr.result;
-          const title = 'PARQUEO MULTICARS - Reporte';
-          const fecha = new Date().toLocaleString();
-          const header = `<table><tr><td colspan="6" style="text-align:left"><img src="${imgData}" style="max-height:80px"/></td></tr><tr><td colspan="6" style="font-weight:700;font-size:16pt">${title}</td></tr><tr><td colspan="6">Fecha: ${fecha}</td></tr></table><br/>`;
-          const cols=['Placa','Marca','Ingreso','Salida','Minutos','Total Q'];
-          const rows = registros.map(r=>{ const minutos=r.horaSalida?Math.ceil((new Date(r.horaSalida)-new Date(r.horaIngreso))/60000):''; return [escapeHtml(r.placa),escapeHtml(r.marca),new Date(r.horaIngreso).toLocaleString(),r.horaSalida?new Date(r.horaSalida).toLocaleString():'',minutos,r.total!=null?Number(r.total).toFixed(2):'']});
-          let table = '<table border="1" style="border-collapse:collapse"><thead><tr>'+cols.map(c=>`<th style="background:#f2f2f2;padding:6px 8px">${c}</th>`).join('')+'</tr></thead><tbody>';
-          rows.forEach(rw=>{ table+='<tr>'+rw.map(c=>`<td style="padding:6px 8px">${c}</td>`).join('')+'</tr>'});
-          table+='</tbody></table>';
-          const html = '<!doctype html><html><head><meta charset="utf-8"><title>'+title+'</title></head><body>'+header+table+'</body></html>';
-          const blobFile = new Blob([html],{type:'application/vnd.ms-excel'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blobFile);
-          a.download='parqueo_multicars_visual_'+(new Date()).toISOString().slice(0,10)+'.xls'; a.click();
-        };
-        fr.readAsDataURL(blob);
-      }).catch(err=>{ alert('No se pudo leer IMAGEN1.png para el Excel visual'); console.error(err); });
-    }
-
-    // Exportar cierres a .xlsx
-    document.getElementById('btnExportCierresXLS')?.addEventListener('click', ()=>{
-      try{
-        const wb = XLSX.utils.book_new();
-        const ws_data = [['#','Fecha','Cantidad','Total Q']];
-        cierres.forEach((c,i)=> ws_data.push([i+1,c.fecha,c.cantidad,c.total]));
-        const ws = XLSX.utils.aoa_to_sheet(ws_data);
-        XLSX.utils.book_append_sheet(wb, ws, 'Cierres');
-        XLSX.writeFile(wb, 'parqueo_multicars_cierres_'+(new Date()).toISOString().slice(0,10)+'.xlsx');
-      }catch(e){console.error(e);alert('Error exportando cierres');}
-    });
-
-    document.getElementById('btnExportCSV')?.addEventListener('click',()=>{
-      const rows=[['placa','marca','horaIngreso','horaSalida','total']];
-      registros.forEach(r=>rows.push([r.placa,r.marca,r.horaIngreso,r.horaSalida||'',r.total||0]));
-      const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='parqueo_'+(new Date()).toISOString().slice(0,10)+'.csv'; a.click();
-    });
-
-    document.getElementById('placa').addEventListener('keyup',(e)=>{ if(e.key==='Enter') document.getElementById('marca').focus()});
-    document.getElementById('marca').addEventListener('keyup',(e)=>{ if(e.key==='Enter') document.getElementById('btnIngresar').click()});
-
-    function init(){ actualizarTabla(); document.querySelector('#menu button[data-view="dashboard"]').click(); renderCierresTable(); }
-    init();
-
-    window.PM={registros,users,save,calcularPago,tarifas,cierres};
-  </script>
 </body>
 </html>
+
