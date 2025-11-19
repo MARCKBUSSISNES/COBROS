@@ -1544,24 +1544,141 @@ function closeShift(){
     totalGeneral += s.total;
   });
 
+  const ahora = new Date();
+  const fechaStr = ahora.toLocaleString();
+
   const html = `
   <!doctype html>
-  <html><head><meta charset="utf-8">
-  <style>
-    body{ font-family:Arial; padding:6px; }
-    @page{ size:80mm auto; margin:3mm; }
-  </style>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Cierre de turno</title>
+    <style>
+      @page{
+        size:80mm auto;
+        margin:3mm;
+      }
+      body{
+        font-family:Arial, sans-serif;
+        margin:0;
+        padding:6px;
+      }
+      .ticket{
+        width:76mm;
+        margin:0 auto;
+        font-size:14px;
+      }
+      .logo{
+        max-width:68mm;
+        display:block;
+        margin:0 auto 6px;
+      }
+      .title{
+        text-align:center;
+        font-weight:900;
+        font-size:18px;
+        margin:4px 0 2px;
+      }
+      .subtitle{
+        text-align:center;
+        font-size:13px;
+        margin-bottom:4px;
+      }
+      .date{
+        text-align:center;
+        font-size:12px;
+        margin-bottom:6px;
+      }
+      .line{
+        border-top:1px dashed #444;
+        margin:6px 0;
+      }
+      .totals-block{
+        margin-top:4px;
+        font-size:14px;
+      }
+      .kv{
+        display:flex;
+        justify-content:space-between;
+        margin:2px 0;
+      }
+      .kv span:first-child{
+        font-weight:600;
+      }
+      .grand-total{
+        margin-top:6px;
+        padding-top:4px;
+        border-top:1px solid #222;
+        font-weight:900;
+        font-size:16px;
+      }
+      .sales-title{
+        margin-top:8px;
+        font-weight:700;
+        font-size:13px;
+      }
+      .sales-list{
+        margin-top:4px;
+        font-size:12px;
+      }
+      .sale-row{
+        margin-bottom:4px;
+      }
+      .sale-row-main{
+        display:flex;
+        justify-content:space-between;
+      }
+      .sale-row-extra{
+        color:#555;
+        font-size:11px;
+      }
+      .footer{
+        text-align:center;
+        font-size:11px;
+        margin-top:10px;
+      }
+    </style>
   </head>
   <body onload="setTimeout(()=>window.print(),200)">
-    <h3 style="text-align:center;margin:4px 0 6px">CIERRE DE TURNO</h3>
-    <div>Total Efectivo: Q${totalEfectivo.toFixed(2)}</div>
-    <div>Total Tarjeta: Q${totalTarjeta.toFixed(2)}</div>
-    <hr>
-    <div><b>Total General: Q${totalGeneral.toFixed(2)}</b></div>
-    <br>
-    <div style="font-size:12px">Ventas incluidas:</div>
-    ${hist.map(s=> `${s.orderLabel} - ${fmt(s.total)}<br>` ).join("")}
-  </body></html>
+    <div class="ticket">
+      <img src="logo" class="logo" onerror="this.onerror=null;this.src='logo.png';">
+
+      <div class="title">CIERRE DE TURNO</div>
+      <div class="subtitle">TORTILLAS DE HARINA LAS PICONAS</div>
+      <div class="date">${fechaStr}</div>
+
+      <div class="line"></div>
+
+      <div class="totals-block">
+        <div class="kv"><span>Tickets:</span><span>${hist.length}</span></div>
+        <div class="kv"><span>Total efectivo:</span><span>${fmt(totalEfectivo)}</span></div>
+        <div class="kv"><span>Total tarjeta:</span><span>${fmt(totalTarjeta)}</span></div>
+        <div class="grand-total">TOTAL GENERAL: ${fmt(totalGeneral)}</div>
+      </div>
+
+      <div class="line"></div>
+
+      <div class="sales-title">Detalle de ventas</div>
+      <div class="sales-list">
+        ${hist.map(s=>`
+          <div class="sale-row">
+            <div class="sale-row-main">
+              <span>${s.orderLabel}</span>
+              <span>${fmt(s.total)}</span>
+            </div>
+            <div class="sale-row-extra">
+              ${s.dateFormatted || ""} — ${s.payment || ""}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="footer">
+        Fin de cierre - Guarde este comprobante
+      </div>
+    </div>
+  </body>
+  </html>
   `;
 
   const w = window.open("", "_blank", "width=420,height=720");
@@ -1570,9 +1687,8 @@ function closeShift(){
 
   // limpiar historial
   localStorage.setItem('v8_sales', JSON.stringify([]));
-  alert("Cierre realizado.");
+  alert("Cierre realizado. Historial de ventas reiniciado.");
 }
-
 
 
 /* ========================================
