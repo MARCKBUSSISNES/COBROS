@@ -1689,32 +1689,24 @@ function reprintKitchen(id){
 /* ========================================
    FINALIZAR VENTA
 ======================================== */
-// ==============================
-//   IMPRESIÓN SEPARADA
-//   COCINA → corte
-//   CLIENTE → corte
-// ==============================
+document.getElementById("finalizar").onclick = () => {
 
-// ==== TICKET COCINA (trabajo #1) ====
-const kitchenHTML = buildKitchenHTML(sale).replace(
-  "</body>",
-  `<script>
-    window.onload = () => {
-      window.print();
-      setTimeout(()=> window.close(), 300);
-    };
-  </script></body>`
-);
+  if (cart.length === 0) {
+    alert("No hay productos.");
+    return;
+  }
 
-const win1 = window.open("", "_blank", "width=420,height=720");
-win1.document.write(kitchenHTML);
-win1.document.close();
+  const sale = buildSaleObject();
+  saveSale(sale);
 
+  // ==============================
+  //   IMPRESIÓN SEPARADA
+  //   COCINA → corte
+  //   CLIENTE → corte
+  // ==============================
 
-// ==== Espera y luego imprime CLIENTE (trabajo #2) ====
-setTimeout(()=>{
-  
-  const clientHTML = buildClientHTML(sale).replace(
+  // ==== TICKET COCINA (trabajo #1) ====
+  const kitchenHTML = buildKitchenHTML(sale).replace(
     "</body>",
     `<script>
       window.onload = () => {
@@ -1724,11 +1716,29 @@ setTimeout(()=>{
     </script></body>`
   );
 
-  const win2 = window.open("", "_blank", "width=420,height=720");
-  win2.document.write(clientHTML);
-  win2.document.close();
+  const win1 = window.open("", "_blank", "width=420,height=720");
+  win1.document.write(kitchenHTML);
+  win1.document.close();
 
-}, 900); // tiempo entre trabajos
+
+  // ==== Espera y luego imprime CLIENTE (trabajo #2) ====
+  setTimeout(()=>{
+
+    const clientHTML = buildClientHTML(sale).replace(
+      "</body>",
+      `<script>
+        window.onload = () => {
+          window.print();
+          setTimeout(()=> window.close(), 300);
+        };
+      </script></body>`
+    );
+
+    const win2 = window.open("", "_blank", "width=420,height=720");
+    win2.document.write(clientHTML);
+    win2.document.close();
+
+  }, 900); // tiempo entre trabajos (ajústalo si hace falta)
 
 
   // ==============================
@@ -1744,7 +1754,7 @@ setTimeout(()=>{
   renderViewer();
   updateOrderLabel();
 
-  alert("Venta registrada e impresión generada.");
+  alert("Venta registrada e impresiones enviadas.");
 };
 
 
