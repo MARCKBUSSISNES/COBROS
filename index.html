@@ -685,6 +685,8 @@ html,body{
   <div class="topbar">
     <div style="font-weight:800;font-size:20px">Visor de Cliente</div>
     <button id="btnHistoryHeader" class="action-btn">Historial</button>
+    <button id="btnAutoSize" class="action-btn">Ajustar Tamaño</button>
+
   </div>
 
   <!-- ORDEN ACTUAL -->
@@ -1918,6 +1920,48 @@ window.addEventListener("storage", ev=>{
   }
 });
 
+/* ========================================
+   AUTO AJUSTE DE PANTALLA
+======================================== */
+
+function autoSize(){
+  const app = document.getElementById("appRoot");
+  if(!app) return;
+
+  // Medidas reales del viewport
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const ratio = w / h;
+
+  let scale = 1;
+
+  // Pantalla cuadrada o casi
+  if(ratio < 1.1){
+    scale = 0.85;
+  }
+  // Pantalla vertical tipo tablet
+  else if(ratio < 1.4){
+    scale = 0.95;
+  }
+  // Pantalla horizontal normal
+  else if(ratio < 2){
+    scale = 1.05;
+  }
+  // Ultrawide o monitor grande
+  else{
+    scale = 1.2;
+  }
+
+  app.style.transform = `scale(${scale})`;
+  app.style.transformOrigin = "top center";
+  app.style.width = `${100/scale}%`;
+}
+
+// Evento del botón
+document.getElementById("btnAutoSize").onclick = autoSize;
+
+// Auto-ajustar cada vez que la pantalla cambie
+window.addEventListener("resize", autoSize);
 
 
 /* ========================================
