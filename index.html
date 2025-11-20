@@ -1698,17 +1698,71 @@ document.getElementById("finalizar").onclick = ()=>{
 
   const sale = buildSaleObject();
   saveSale(sale);
-// imprimir CLIENTE
-const htmlClient = buildClientHTML(sale);
-const win1 = window.open("", "_blank", "width=420,height=720");
-win1.document.write(htmlClient);
-win1.document.close();
 
-// imprimir COCINA
-const htmlKitchen = buildKitchenHTML(sale);
-const win2 = window.open("", "_blank", "width=420,height=720");
-win2.document.write(htmlKitchen);
-win2.document.close();
+  // ==== AQUÍ VA EL CÓDIGO NUEVO ====
+  // IMPRIMIR COCINA + CLIENTE EN UN SOLO TRABAJO
+  const htmlBoth = `
+  <!doctype html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Impresión</title>
+    <style>
+      @page{
+        size:80mm auto;
+        margin:3mm;
+      }
+      body{
+        margin:0;
+        padding:0;
+      }
+      .page{
+        page-break-after: always;
+      }
+    </style>
+  </head>
+  <body onload="setTimeout(()=>window.print(),200)">
+
+    <div class="page">
+      ${buildKitchenHTML(sale)
+        .replace("<html>", "")
+        .replace("</html>", "")
+        .replace("<body", "<div")
+        .replace("</body>", "</div>")
+      }
+    </div>
+
+    <div class="page">
+      ${buildClientHTML(sale)
+        .replace("<html>", "")
+        .replace("</html>", "")
+        .replace("<body", "<div")
+        .replace("</body>", "</div>")
+      }
+    </div>
+
+  </body>
+  </html>
+  `;
+
+  const w = window.open("", "_blank", "width=420,height=700");
+  w.document.write(htmlBoth);
+  w.document.close();
+  // ==== FIN DEL CÓDIGO NUEVO ====
+
+  // reset
+  cart = [];
+  discount = 0;
+  orderNumber++;
+
+  saveCart();
+  saveOrderCounter();
+
+  renderViewer();
+  updateOrderLabel();
+
+  alert("Venta registrada e impresión generada.");
+};
 
 
 
