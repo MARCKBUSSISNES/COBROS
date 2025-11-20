@@ -1689,73 +1689,47 @@ function reprintKitchen(id){
 /* ========================================
    FINALIZAR VENTA
 ======================================== */
-document.getElementById("finalizar").onclick = () => {
+// ==============================
+//   IMPRESIÓN SEPARADA
+//   COCINA → corte
+//   CLIENTE → corte
+// ==============================
 
-  if (cart.length === 0) {
-    alert("No hay productos.");
-    return;
-  }
+// ==== TICKET COCINA (trabajo #1) ====
+const kitchenHTML = buildKitchenHTML(sale).replace(
+  "</body>",
+  `<script>
+    window.onload = () => {
+      window.print();
+      setTimeout(()=> window.close(), 300);
+    };
+  </script></body>`
+);
 
-  const sale = buildSaleObject();
-  saveSale(sale);
+const win1 = window.open("", "_blank", "width=420,height=720");
+win1.document.write(kitchenHTML);
+win1.document.close();
 
-  // ==============================
-  //  UN SOLO TRABAJO DE IMPRESIÓN
-  //  (COCINA + CLIENTE)
-  // ==============================
 
-  // Limpiamos los HTML individuales para incrustarlos dentro de otro
-  const kitchenBlock = buildKitchenHTML(sale)
-    .replace("<!doctype html>", "")
-    .replace("<html>", "")
-    .replace("</html>", "")
-    .replace("<body", "<div")
-    .replace("</body>", "</div>");
+// ==== Espera y luego imprime CLIENTE (trabajo #2) ====
+setTimeout(()=>{
+  
+  const clientHTML = buildClientHTML(sale).replace(
+    "</body>",
+    `<script>
+      window.onload = () => {
+        window.print();
+        setTimeout(()=> window.close(), 300);
+      };
+    </script></body>`
+  );
 
-  const clientBlock = buildClientHTML(sale)
-    .replace("<!doctype html>", "")
-    .replace("<html>", "")
-    .replace("</html>", "")
-    .replace("<body", "<div")
-    .replace("</body>", "</div>");
+  const win2 = window.open("", "_blank", "width=420,height=720");
+  win2.document.write(clientHTML);
+  win2.document.close();
 
-  const htmlBoth = `
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Impresión</title>
-  <style>
-    @page{
-      size:80mm auto;
-      margin:3mm;
-    }
-    body{
-      margin:0;
-      padding:0;
-    }
-    .page{
-      page-break-after: always;
-    }
-  </style>
-</head>
-<body onload="setTimeout(()=>window.print(),200)">
-  <!-- TICKET COCINA -->
-  <div class="page">
-    ${kitchenBlock}
-  </div>
+}, 900); // tiempo entre trabajos
 
-  <!-- TICKET CLIENTE -->
-  <div class="page">
-    ${clientBlock}
-  </div>
-</body>
-</html>
-  `;
-
-  const w = window.open("", "_blank", "width=420,height=720");
-  w.document.write(htmlBoth);
-  w.document.close();
 
   // ==============================
   //  RESET DE LA VENTA
