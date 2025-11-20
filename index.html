@@ -1685,6 +1685,9 @@ function reprintKitchen(id){
 /* ========================================
    FINALIZAR VENTA
 ======================================== */
+/* ========================================
+   FINALIZAR VENTA (2 páginas en 1 documento)
+======================================== */
 document.getElementById("finalizar").onclick = ()=>{
 
   if(cart.length === 0){
@@ -1695,19 +1698,59 @@ document.getElementById("finalizar").onclick = ()=>{
   const sale = buildSaleObject();
   saveSale(sale);
 
-  // imprimir CLIENTE
-  const htmlClient = buildClientHTML(sale);
-  const win1 = window.open("", "_blank", "width=420,height=720");
-  win1.document.write(htmlClient);
-  win1.document.close();
+  // Generar bloques internos SIN <html> ni <body>
+  const kitchenBlock = buildKitchenHTML(sale)
+    .replace("<!doctype html>", "")
+    .replace("<html>", "")
+    .replace("</html>", "")
+    .replace("<body onload=\"setTimeout(()=>window.print(),200)\">", "")
+    .replace("</body>", "");
 
-  // imprimir COCINA
-  const htmlKitchen = buildKitchenHTML(sale);
-  const win2 = window.open("", "_blank", "width=420,height=720");
-  win2.document.write(htmlKitchen);
-  win2.document.close();
+  const clientBlock = buildClientHTML(sale)
+    .replace("<!doctype html>", "")
+    .replace("<html>", "")
+    .replace("</html>", "")
+    .replace("<body onload=\"setTimeout(()=>window.print(),200)\">", "")
+    .replace("</body>", "");
 
-  // reset
+  const finalHTML = `
+  <!doctype html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <title>Impresión</title>
+    <style>
+      @page { size:80mm auto; margin:3mm; }
+      body { margin:0; padding:0; }
+
+      .page{
+        page-break-after: always;
+        width:100%;
+      }
+    </style>
+  </head>
+  <body onload="setTimeout(()=>window.print(),200)">
+    
+    <!-- Página 1: Cocina -->
+    <div class="page">
+      ${kitchenBlock}
+    </div>
+
+    <!-- Página 2: Cliente -->
+    <div class="page">
+      ${clientBlock}
+    </div>
+
+  </body>
+  </html>
+  `;
+
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(finalHTML);
+  w.document.close();
+
+
+  // RESET
   cart = [];
   discount = 0;
   orderNumber++;
@@ -1718,7 +1761,7 @@ document.getElementById("finalizar").onclick = ()=>{
   renderViewer();
   updateOrderLabel();
 
-  alert("Venta registrada e impresiones enviadas.");
+  alert("Venta registrada e impresión generada.");
 };
 
 
