@@ -1682,59 +1682,6 @@ function reprintKitchen(id){
 
 
 
-/* ========================================
-   FINALIZAR VENTA — Opción A (2 trabajos automáticos)
-======================================== */
-document.getElementById("finalizar").onclick = ()=>{
-
-  if(cart.length === 0){
-    alert("No hay productos.");
-    return;
-  }
-
-  const sale = buildSaleObject();
-  saveSale(sale);
-
-  /* =============================
-      TRABAJO #1 — COCINA
-  ============================== */
-  const kitchenHTML = buildKitchenHTML(sale).replace(
-    "</body>",
-    `<script>
-        window.onload = () => {
-          window.print();
-          setTimeout(()=> window.close(), 300);
-        };
-     </script></body>`
-  );
-
-  const winKitchen = window.open("", "_blank", "width=1,height=1,top=-1000,left=-1000");
-  winKitchen.document.write(kitchenHTML);
-  winKitchen.document.close();
-
-
-  /* =============================
-      TRABAJO #2 — CLIENTE (delay para que no se mezclen)
-  ============================== */
-  setTimeout(()=>{
-
-    const clientHTML = buildClientHTML(sale).replace(
-      "</body>",
-      `<script>
-          window.onload = () => {
-            window.print();
-            setTimeout(()=> window.close(), 300);
-          };
-       </script></body>`
-    );
-
-    const winClient = window.open("", "_blank", "width=1,height=1,top=-1000,left=-1000");
-    winClient.document.write(clientHTML);
-    winClient.document.close();
-
-  }, 800); // tiempo de separación entre impresiones
-
-
   /* =============================
       RESET
   ============================== */
