@@ -1647,8 +1647,43 @@ function buildKitchenHTML(s){
   `;
 }
 
+
+
+
 /* ========================================
-   FINALIZAR VENTA — Opción A (2 trabajos automáticos)
+   IMPRIMIR TICKET CLIENTE
+======================================== */
+function reprintSale(id){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const sale = hist.find(x=>x.id===id);
+  if(!sale){ alert("No encontrado"); return; }
+
+  const html = buildClientHTML(sale);
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
+}
+
+
+
+/* ========================================
+   IMPRIMIR TICKET COCINA
+======================================== */
+function reprintKitchen(id){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const sale = hist.find(x=>x.id===id);
+  if(!sale){ alert("No encontrado"); return; }
+
+  const html = buildKitchenHTML(sale);
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
+}
+
+
+
+/* ========================================
+   FINALIZAR VENTA
 ======================================== */
 document.getElementById("finalizar").onclick = ()=>{
 
@@ -1660,65 +1695,19 @@ document.getElementById("finalizar").onclick = ()=>{
   const sale = buildSaleObject();
   saveSale(sale);
 
-  /* =============================
-      TRABAJO #1 — COCINA
-  ============================== */
-  const kitchenHTML = buildKitchenHTML(sale).replace(
-    "</body>",
-    `<script>
-        window.onload = () => {
-          window.print();
-          setTimeout(()=> window.close(), 300);
-        };
-     </script></body>`
-  );
+  // imprimir CLIENTE
+  const htmlClient = buildClientHTML(sale);
+  const win1 = window.open("", "_blank", "width=420,height=720");
+  win1.document.write(htmlClient);
+  win1.document.close();
 
-  const winKitchen = window.open("", "_blank", "width=1,height=1,top=-1000,left=-1000");
-  winKitchen.document.write(kitchenHTML);
-  winKitchen.document.close();
+  // imprimir COCINA
+  const htmlKitchen = buildKitchenHTML(sale);
+  const win2 = window.open("", "_blank", "width=420,height=720");
+  win2.document.write(htmlKitchen);
+  win2.document.close();
 
-
-  /* =============================
-      TRABAJO #2 — CLIENTE (delay para que no se mezclen)
-  ============================== */
-  setTimeout(()=>{
-
-    const clientHTML = buildClientHTML(sale).replace(
-      "</body>",
-      `<script>
-          window.onload = () => {
-            window.print();
-            setTimeout(()=> window.close(), 300);
-          };
-       </script></body>`
-    );
-
-    const winClient = window.open("", "_blank", "width=1,height=1,top=-1000,left=-1000");
-    winClient.document.write(clientHTML);
-    winClient.document.close();
-
-  }, 800); // tiempo de separación entre impresiones
-
-
-  /* =============================
-      RESET
-  ============================== */
-  cart = [];
-  discount = 0;
-  orderNumber++;
-
-  saveCart();
-  saveOrderCounter();
-
-  renderViewer();
-  updateOrderLabel();
-
-  alert("Venta registrada e impresiones enviadas.");
-};
-
-  /* =============================
-      RESET
-  ============================== */
+  // reset
   cart = [];
   discount = 0;
   orderNumber++;
