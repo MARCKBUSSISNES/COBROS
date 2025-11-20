@@ -1689,9 +1689,9 @@ function reprintKitchen(id){
 /* ========================================
    FINALIZAR VENTA
 ======================================== */
-document.getElementById("finalizar").onclick = ()=>{
+document.getElementById("finalizar").onclick = () => {
 
-  if(cart.length === 0){
+  if (cart.length === 0) {
     alert("No hay productos.");
     return;
   }
@@ -1699,58 +1699,67 @@ document.getElementById("finalizar").onclick = ()=>{
   const sale = buildSaleObject();
   saveSale(sale);
 
-  // ==== AQUÍ VA EL CÓDIGO NUEVO ====
-  // IMPRIMIR COCINA + CLIENTE EN UN SOLO TRABAJO
+  // ==============================
+  //  UN SOLO TRABAJO DE IMPRESIÓN
+  //  (COCINA + CLIENTE)
+  // ==============================
+
+  // Limpiamos los HTML individuales para incrustarlos dentro de otro
+  const kitchenBlock = buildKitchenHTML(sale)
+    .replace("<!doctype html>", "")
+    .replace("<html>", "")
+    .replace("</html>", "")
+    .replace("<body", "<div")
+    .replace("</body>", "</div>");
+
+  const clientBlock = buildClientHTML(sale)
+    .replace("<!doctype html>", "")
+    .replace("<html>", "")
+    .replace("</html>", "")
+    .replace("<body", "<div")
+    .replace("</body>", "</div>");
+
   const htmlBoth = `
-  <!doctype html>
-  <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Impresión</title>
-    <style>
-      @page{
-        size:80mm auto;
-        margin:3mm;
-      }
-      body{
-        margin:0;
-        padding:0;
-      }
-      .page{
-        page-break-after: always;
-      }
-    </style>
-  </head>
-  <body onload="setTimeout(()=>window.print(),200)">
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Impresión</title>
+  <style>
+    @page{
+      size:80mm auto;
+      margin:3mm;
+    }
+    body{
+      margin:0;
+      padding:0;
+    }
+    .page{
+      page-break-after: always;
+    }
+  </style>
+</head>
+<body onload="setTimeout(()=>window.print(),200)">
+  <!-- TICKET COCINA -->
+  <div class="page">
+    ${kitchenBlock}
+  </div>
 
-    <div class="page">
-      ${buildKitchenHTML(sale)
-        .replace("<html>", "")
-        .replace("</html>", "")
-        .replace("<body", "<div")
-        .replace("</body>", "</div>")
-      }
-    </div>
-
-    <div class="page">
-      ${buildClientHTML(sale)
-        .replace("<html>", "")
-        .replace("</html>", "")
-        .replace("<body", "<div")
-        .replace("</body>", "</div>")
-      }
-    </div>
-
-  </body>
-  </html>
+  <!-- TICKET CLIENTE -->
+  <div class="page">
+    ${clientBlock}
+  </div>
+</body>
+</html>
   `;
 
-  const w = window.open("", "_blank", "width=420,height=700");
+  const w = window.open("", "_blank", "width=420,height=720");
   w.document.write(htmlBoth);
   w.document.close();
-  // ==== FIN DEL CÓDIGO NUEVO ====
 
-  // reset
+  // ==============================
+  //  RESET DE LA VENTA
+  // ==============================
   cart = [];
   discount = 0;
   orderNumber++;
@@ -1762,22 +1771,6 @@ document.getElementById("finalizar").onclick = ()=>{
   updateOrderLabel();
 
   alert("Venta registrada e impresión generada.");
-};
-
-
-
-  // reset
-  cart = [];
-  discount = 0;
-  orderNumber++;
-
-  saveCart();
-  saveOrderCounter();
-
-  renderViewer();
-  updateOrderLabel();
-
-  alert("Venta registrada e impresiones enviadas.");
 };
 
 
