@@ -1699,17 +1699,41 @@ document.getElementById("finalizar").onclick = ()=>{
   const sale = buildSaleObject();
   saveSale(sale);
 
-  // imprimir CLIENTE
-  const htmlClient = buildClientHTML(sale);
-  const win1 = window.open("", "_blank", "width=420,height=720");
-  win1.document.write(htmlClient);
-  win1.document.close();
+ // IMPRIME COCINA CON AUTOCIERRE
+const kitchenHTML = buildKitchenHTML(sale).replace(
+  "</body>",
+  `<script>
+    window.onload = () => {
+      window.print();
+      setTimeout(() => window.close(), 300);
+    };
+  </script></body>`
+);
 
-  // imprimir COCINA
-  const htmlKitchen = buildKitchenHTML(sale);
-  const win2 = window.open("", "_blank", "width=420,height=720");
-  win2.document.write(htmlKitchen);
-  win2.document.close();
+const w1 = window.open("", "_blank", "width=400,height=700");
+w1.document.write(kitchenHTML);
+w1.document.close();
+
+
+// ESPERA UN POCO Y LUEGO IMPRIME CLIENTE
+setTimeout(() => {
+
+  const clientHTML = buildClientHTML(sale).replace(
+    "</body>",
+    `<script>
+      window.onload = () => {
+        window.print();
+        setTimeout(() => window.close(), 300);
+      };
+    </script></body>`
+  );
+
+  const w2 = window.open("", "_blank", "width=400,height=700");
+  w2.document.write(clientHTML);
+  w2.document.close();
+
+}, 800); // tiempo entre impresiones (ajustable)
+
 
   // reset
   cart = [];
