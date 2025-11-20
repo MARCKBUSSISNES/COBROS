@@ -288,15 +288,13 @@ html,body{
 }
 
 .total-final{
-  font-size:48px !important;      /* Más grande */
-  font-weight:900 !important;      /* Súper grueso */
+  font-size:34px;
+  font-weight:900;
   margin-top:12px;
   padding-top:12px;
-  border-top:2px solid rgba(255,255,255,0.4);
-  color:#ffffff !important;        /* Blanco puro */
-  text-shadow:0 0 6px rgba(255,255,255,0.3); /* brillo suave */
+  border-top:1px solid rgba(255,255,255,0.3);
+  color:#ffffff;
 }
-
 /* ==========================================================
       CSS V8 ORDENADO — CONTINUACIÓN
 ========================================================== */
@@ -591,6 +589,11 @@ html,body{
   <a href="#" data-action="closeShift">🧾 Cierre de turno</a>
 </div>
 
+
+</div>
+
+
+
 <!-- =========================================
      MODAL DE HISTORIAL
 ========================================= -->
@@ -682,8 +685,6 @@ html,body{
   <div class="topbar">
     <div style="font-weight:800;font-size:20px">Visor de Cliente</div>
     <button id="btnHistoryHeader" class="action-btn">Historial</button>
-    <button id="btnAutoSize" class="action-btn">Ajustar Tamaño</button>
-
   </div>
 
   <!-- ORDEN ACTUAL -->
@@ -1517,21 +1518,21 @@ function buildClientHTML(s){
       </div>
 
       <div class="footer">
-        Gracias por su compra<br>
-        conserve este comprobante
-        <br><br>
-        <div style="font-size:10px; margin-top:6px;">
-          Desarrollado por <b>Marck Business Solutions</b> © 2025<br>
-          Tel: <b>4152-9411</b>
-        </div>
-      </div>
+  Gracias por su compra<br>
+  conserve este comprobante
+  <br><br>
+  <div style="font-size:10px; margin-top:6px;">
+    Desarrollado por <b>Marck Business Solutions</b> © 2025<br>
+    Tel: <b>4152-9411</b>
+  </div>
+</div>
 
-    </div>
-
-  </body>
   </html>
   `;
 }
+
+
+
 
 /* ========================================
    GENERAR HTML PARA IMPRESIÓN COCINA
@@ -1633,29 +1634,60 @@ function buildKitchenHTML(s){
         `).join("")}
       </div>
 
-      <div class="footer">
-        --- FIN COMANDA ---
-        <br><br>
-        <div style="font-size:10px; margin-top:6px;">
-          Marck Business Solutions © 2025<br>
-          Tel: 4152-9411
-        </div>
-      </div>
-
-    </div> <!-- CIERRE CORRECTO DEL TICKET -->
-
+     <div class="footer">
+  --- FIN COMANDA ---
+  <br><br>
+  <div style="font-size:10px; margin-top:6px;">
+    Marck Business Solutions © 2025<br>
+    Tel: 4152-9411
+  </div>
+</div>
   </body>
   </html>
   `;
 }
 
 
+
+
+/* ========================================
+   IMPRIMIR TICKET CLIENTE
+======================================== */
+function reprintSale(id){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const sale = hist.find(x=>x.id===id);
+  if(!sale){ alert("No encontrado"); return; }
+
+  const html = buildClientHTML(sale);
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
+}
+
+
+
+/* ========================================
+   IMPRIMIR TICKET COCINA
+======================================== */
+function reprintKitchen(id){
+  const hist = JSON.parse(localStorage.getItem('v8_sales') || '[]');
+  const sale = hist.find(x=>x.id===id);
+  if(!sale){ alert("No encontrado"); return; }
+
+  const html = buildKitchenHTML(sale);
+  const w = window.open("", "_blank", "width=420,height=720");
+  w.document.write(html);
+  w.document.close();
+}
+
+
+
 /* ========================================
    FINALIZAR VENTA
 ======================================== */
-document.getElementById("finalizar").onclick = () => {
+document.getElementById("finalizar").onclick = ()=>{
 
-  if (cart.length === 0) {
+  if(cart.length === 0){
     alert("No hay productos.");
     return;
   }
@@ -1663,51 +1695,19 @@ document.getElementById("finalizar").onclick = () => {
   const sale = buildSaleObject();
   saveSale(sale);
 
-  // ==============================
-  //   IMPRESIÓN SEPARADA
-  //   COCINA → corte
-  //   CLIENTE → corte
-  // ==============================
-
-  // ==== TICKET COCINA (trabajo #1) ====
-  const kitchenHTML = buildKitchenHTML(sale).replace(
-    "</body>",
-    `<script>
-      window.onload = () => {
-        window.print();
-        setTimeout(()=> window.close(), 300);
-      };
-    </script></body>`
-  );
-
+  // imprimir CLIENTE
+  const htmlClient = buildClientHTML(sale);
   const win1 = window.open("", "_blank", "width=420,height=720");
-  win1.document.write(kitchenHTML);
+  win1.document.write(htmlClient);
   win1.document.close();
 
+  // imprimir COCINA
+  const htmlKitchen = buildKitchenHTML(sale);
+  const win2 = window.open("", "_blank", "width=420,height=720");
+  win2.document.write(htmlKitchen);
+  win2.document.close();
 
-  // ==== Espera y luego imprime CLIENTE (trabajo #2) ====
-  setTimeout(()=>{
-
-    const clientHTML = buildClientHTML(sale).replace(
-      "</body>",
-      `<script>
-        window.onload = () => {
-          window.print();
-          setTimeout(()=> window.close(), 300);
-        };
-      </script></body>`
-    );
-
-    const win2 = window.open("", "_blank", "width=420,height=720");
-    win2.document.write(clientHTML);
-    win2.document.close();
-
-  }, 900); // tiempo entre trabajos (ajústalo si hace falta)
-
-
-  // ==============================
-  //  RESET DE LA VENTA
-  // ==============================
+  // reset
   cart = [];
   discount = 0;
   orderNumber++;
@@ -1918,48 +1918,6 @@ window.addEventListener("storage", ev=>{
   }
 });
 
-/* ========================================
-   AUTO AJUSTE DE PANTALLA
-======================================== */
-
-function autoSize(){
-  const app = document.getElementById("appRoot");
-  if(!app) return;
-
-  // Medidas reales del viewport
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  const ratio = w / h;
-
-  let scale = 1;
-
-  // Pantalla cuadrada o casi
-  if(ratio < 1.1){
-    scale = 0.85;
-  }
-  // Pantalla vertical tipo tablet
-  else if(ratio < 1.4){
-    scale = 0.95;
-  }
-  // Pantalla horizontal normal
-  else if(ratio < 2){
-    scale = 1.05;
-  }
-  // Ultrawide o monitor grande
-  else{
-    scale = 1.2;
-  }
-
-  app.style.transform = `scale(${scale})`;
-  app.style.transformOrigin = "top center";
-  app.style.width = `${100/scale}%`;
-}
-
-// Evento del botón
-document.getElementById("btnAutoSize").onclick = autoSize;
-
-// Auto-ajustar cada vez que la pantalla cambie
-window.addEventListener("resize", autoSize);
 
 
 /* ========================================
@@ -1976,4 +1934,3 @@ init();
 
 </body>
 </html>
-
