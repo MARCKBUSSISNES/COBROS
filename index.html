@@ -1683,10 +1683,7 @@ function reprintKitchen(id){
 
 
 /* ========================================
-   FINALIZAR VENTA
-======================================== */
-/* ========================================
-   FINALIZAR VENTA (2 páginas en 1 documento)
+   FINALIZAR VENTA — Opción A (2 trabajos automáticos)
 ======================================== */
 document.getElementById("finalizar").onclick = ()=>{
 
@@ -1698,59 +1695,49 @@ document.getElementById("finalizar").onclick = ()=>{
   const sale = buildSaleObject();
   saveSale(sale);
 
-  // Generar bloques internos SIN <html> ni <body>
-  const kitchenBlock = buildKitchenHTML(sale)
-    .replace("<!doctype html>", "")
-    .replace("<html>", "")
-    .replace("</html>", "")
-    .replace("<body onload=\"setTimeout(()=>window.print(),200)\">", "")
-    .replace("</body>", "");
+  /* =============================
+      TRABAJO #1 — COCINA
+  ============================== */
+  const kitchenHTML = buildKitchenHTML(sale).replace(
+    "</body>",
+    `<script>
+        window.onload = () => {
+          window.print();
+          setTimeout(()=> window.close(), 300);
+        };
+     </script></body>`
+  );
 
-  const clientBlock = buildClientHTML(sale)
-    .replace("<!doctype html>", "")
-    .replace("<html>", "")
-    .replace("</html>", "")
-    .replace("<body onload=\"setTimeout(()=>window.print(),200)\">", "")
-    .replace("</body>", "");
-
-  const finalHTML = `
-  <!doctype html>
-  <html>
-  <head>
-    <meta charset="utf-8">
-    <title>Impresión</title>
-    <style>
-      @page { size:80mm auto; margin:3mm; }
-      body { margin:0; padding:0; }
-
-      .page{
-        page-break-after: always;
-        width:100%;
-      }
-    </style>
-  </head>
-  <body onload="setTimeout(()=>window.print(),200)">
-    
-    <!-- Página 1: Cocina -->
-    <div class="page">
-      ${kitchenBlock}
-    </div>
-
-    <!-- Página 2: Cliente -->
-    <div class="page">
-      ${clientBlock}
-    </div>
-
-  </body>
-  </html>
-  `;
-
-  const w = window.open("", "_blank", "width=420,height=720");
-  w.document.write(finalHTML);
-  w.document.close();
+  const winKitchen = window.open("", "_blank", "width=1,height=1,top=-1000,left=-1000");
+  winKitchen.document.write(kitchenHTML);
+  winKitchen.document.close();
 
 
-  // RESET
+  /* =============================
+      TRABAJO #2 — CLIENTE (delay para que no se mezclen)
+  ============================== */
+  setTimeout(()=>{
+
+    const clientHTML = buildClientHTML(sale).replace(
+      "</body>",
+      `<script>
+          window.onload = () => {
+            window.print();
+            setTimeout(()=> window.close(), 300);
+          };
+       </script></body>`
+    );
+
+    const winClient = window.open("", "_blank", "width=1,height=1,top=-1000,left=-1000");
+    winClient.document.write(clientHTML);
+    winClient.document.close();
+
+  }, 800); // tiempo de separación entre impresiones
+
+
+  /* =============================
+      RESET
+  ============================== */
   cart = [];
   discount = 0;
   orderNumber++;
@@ -1761,7 +1748,7 @@ document.getElementById("finalizar").onclick = ()=>{
   renderViewer();
   updateOrderLabel();
 
-  alert("Venta registrada e impresión generada.");
+  alert("Venta registrada e impresiones enviadas.");
 };
 
 
